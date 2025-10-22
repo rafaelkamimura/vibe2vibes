@@ -8,7 +8,6 @@ import {
   AgentParticipant,
   WorkflowState,
   AgentCapability,
-  ModelDescriptor,
   ResultAggregation,
   AgentResult,
   ResultSynthesis,
@@ -42,6 +41,7 @@ export class MockDataGenerator {
       languages: ['typescript', 'javascript', 'python'],
       tools: ['eslint', 'prettier', 'jest'],
       model_preferences: ['gpt-4', 'claude-3'],
+      optimal_tasks: ['code_review', 'testing', 'refactoring'],
       performance_profile: {
         avg_response_time: '150ms',
         success_rate: 0.95,
