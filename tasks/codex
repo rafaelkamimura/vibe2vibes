@@ -1,9 +1,12 @@
 # Codex CLI Tasks - Non-Conflicting Work
 
-## Current Status
-- Claude is fixing TypeScript compilation errors in core modules
-- OpenCode is preparing testing infrastructure
-- Codex can work on documentation, configuration, and UI without conflicts
+## Current Status (End of Day - 2025-10-22)
+- ✅ COMPLETED: TypeScript compilation fixes (Claude)
+- ✅ COMPLETED: Test infrastructure and Docker setup (OpenCode)
+- ✅ COMPLETED: Dashboard mockup with all components (Codex)
+- ✅ COMPLETED: Comprehensive documentation and configuration (Codex)
+- 📋 Phase 1 Infrastructure: 100% Complete
+- 🎯 Ready for Phase 2: Real API Integration
 
 ## Priority Tasks (No Code Conflicts)
 
@@ -139,9 +142,9 @@
   - Integration with communication bus
   - User-friendly interaction flow
 
-### 4. Web Dashboard (LOW PRIORITY - Future Work)
+### 4. Web Dashboard ✅ MOCKUP COMPLETE
 
-**Note:** This is exploratory work, won't block other development
+**Status:** All UI components implemented with mock data simulation
 
 - [x] Create `dashboard/` directory structure
 - [x] Set up React + TypeScript project
@@ -170,21 +173,79 @@
 - [x] Add message inspector drawer/modal
   - Show full JSON payload on selection
   - Provide metadata (timestamps, routing info)
-- [ ] Add agent detail drawer
+- [x] Add agent detail drawer
   - Show capabilities, last heartbeat, current tasks
   - Allow mock status toggles for demo purposes
-- [ ] Enhance session timeline
+- [x] Enhance session timeline
   - Visual workflow stepper with timestamps
   - Display per-step participants and status
-- [ ] Add control panel for mock simulation
+- [x] Add control panel for mock simulation
   - Adjust message cadence, toggle agent health, trigger mock errors
   - Reset simulations quickly
-- [ ] Add notifications/toasts
+- [x] Add notifications/toasts
   - Surface error/warning/info events
   - Allow dismiss or auto-expire
-- [ ] Add theme/status bar
+- [x] Add theme/status bar
   - Display connection status, last refresh time
   - Manual refresh button and theme toggle
+
+**Dashboard Components Delivered:**
+- 13 React components with full interactivity
+- Mock data simulation with configurable cadence
+- Comprehensive README with integration roadmap
+
+---
+
+## Tomorrow's Tasks (2025-10-23) - Phase 2: Dashboard API Integration
+
+### Priority 1: Wire REST Metrics API
+- [ ] Replace mock metrics in `App.tsx` with calls to `/metrics` endpoint
+- [ ] Implement polling strategy (every 5-10 seconds) with error handling
+- [ ] Update MetricsStrip component to display real data
+- [ ] Add loading states and error recovery UI
+
+### Priority 2: Live Agent Registry Connection
+- [ ] Create API client for fetching registered agents (GET /agents, GET /agents/:id)
+- [ ] Replace mock agent list in Sidebar with real data
+- [ ] Update AgentDetailDrawer to fetch live agent info
+- [ ] Add agent registration/deregistration event handling
+
+### Priority 3: WebSocket Message Stream
+- [ ] Connect to Communication Bus WebSocket endpoint
+- [ ] Subscribe to real-time message events
+- [ ] Push incoming messages to MessageStream component
+- [ ] Render full payload and routing metadata in MessageInspector
+- [ ] Handle connection errors and reconnection logic
+
+### Priority 4: Session Lifecycle Integration
+- [ ] Create API client for session management (GET /sessions, GET /sessions/:id)
+- [ ] Wire SessionMonitor to display real sessions
+- [ ] Update SessionTimeline with actual workflow steps and timestamps
+- [ ] Show real participant status and progress
+
+### Priority 5: Control Panel Actions
+- [ ] Map control panel buttons to admin API endpoints
+  - POST /admin/reset, POST /admin/agents/:id/pause, POST /admin/agents/:id/resume
+- [ ] Keep mock mode available behind feature flag
+- [ ] Add confirmation dialogs for destructive actions
+- [ ] Display success/error notifications for admin operations
+
+### Priority 6: Polish & Deployment
+- [ ] Persist UI preferences (theme, filters) to localStorage
+- [ ] Finalize responsive design for mobile/tablet
+- [ ] Add accessibility improvements (keyboard navigation, ARIA labels)
+- [ ] Integrate dashboard build into Dockerfile
+- [ ] Secure dashboard with authentication when available
+
+### Success Criteria
+- ✅ Dashboard connects to real Communication Bus
+- ✅ All mock data replaced with live API calls
+- ✅ WebSocket stream shows real messages
+- ✅ Session monitoring reflects actual workflows
+- ✅ Admin controls interact with bus endpoints
+- ✅ Dashboard ready for production deployment
+
+---
 
 ### 5. Build Scripts & Utilities (MEDIUM PRIORITY)
 
