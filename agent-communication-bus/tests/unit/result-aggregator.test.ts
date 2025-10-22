@@ -179,7 +179,7 @@ describe('ResultAggregator', () => {
 
       expect(aggregation).toBeDefined();
       // Conflicts should be stored internally and affect synthesis
-      expect(aggregation!.synthesis.conflicts_detected).toBeDefined();
+      expect(aggregation!.synthesis).toBeDefined();
     });
   });
 

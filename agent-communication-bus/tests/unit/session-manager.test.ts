@@ -1,7 +1,7 @@
 import { SessionManager } from '../../src/session-manager';
 import { MockDataGenerator } from '../utils/mock-generators';
-import { setupTestDatabase, teardownTestDatabase, testDb } from '../utils/test-database';
-import { SessionContext, AgentParticipant, WorkflowState } from '../../src/types/protocol';
+import { setupTestDatabase, teardownTestDatabase } from '../utils/test-database';
+import { AgentParticipant } from '../../src/types/protocol';
 
 describe('SessionManager', () => {
   let sessionManager: SessionManager;
