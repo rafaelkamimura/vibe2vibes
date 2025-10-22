@@ -1,11 +1,7 @@
-import { EventEmitter } from 'events';
-import WebSocket from 'ws';
 import { spawn, ChildProcess } from 'child_process';
-import { 
-  AgentMessage, 
-  AgentDescriptor, 
-  AgentRegistration,
-  CommunicationBusConfig
+import {
+  AgentMessage,
+  AgentDescriptor
 } from '../types/protocol';
 import { BaseAdapter } from './base-adapter';
 
@@ -81,7 +77,6 @@ export class CodexAdapter extends BaseAdapter {
    * Handle task request by executing Codex CLI
    */
   private async handleTaskRequest(message: AgentMessage): Promise<void> {
-    const { task_type, payload } = message.payload;
     
     // Check concurrent task limit
     if (this.activeTasks.size >= this.config.maxConcurrentTasks!) {
@@ -126,7 +121,7 @@ export class CodexAdapter extends BaseAdapter {
         CODEX_BASE_URL: this.config.baseUrl || process.env.CODEX_BASE_URL
       };
 
-      const process = spawn(this.config.cliPath, command.args, {
+      const childProcess = spawn(this.config.cliPath, command.args, {
         stdio: ['pipe', 'pipe', 'pipe'],
         env
       });
@@ -134,21 +129,21 @@ export class CodexAdapter extends BaseAdapter {
       let stdout = '';
       let stderr = '';
 
-      process.stdout?.on('data', (data) => {
+      childProcess.stdout?.on('data', (data: Buffer) => {
         stdout += data.toString();
       });
 
-      process.stderr?.on('data', (data) => {
-        stderr += data.toString();
+      childProcess.stderr?.on('data', (data: Buffer) => {
+        stdout += data.toString();
       });
 
       // Set up timeout
       const timeout = setTimeout(() => {
-        process.kill('SIGKILL');
+        childProcess.kill('SIGKILL');
         reject(new Error(`Codex task timeout after ${this.config.timeout}ms`));
       }, this.config.timeout);
 
-      process.on('close', (code) => {
+      childProcess.on('close', (code: number | null) => {
         clearTimeout(timeout);
         const duration = Date.now() - startTime;
 
@@ -172,13 +167,13 @@ export class CodexAdapter extends BaseAdapter {
         }
       });
 
-      process.on('error', (error) => {
+      childProcess.on('error', (error: Error) => {
         clearTimeout(timeout);
         reject(new Error(`Codex CLI process error: ${error.message}`));
       });
 
       // Store process reference
-      this.processes.set(message.message_id, process);
+      this.processes.set(message.message_id, childProcess);
     });
   }
 
@@ -515,11 +510,9 @@ export class CodexAdapter extends BaseAdapter {
       return;
     }
 
-    const { message, resolve, reject } = this.taskQueue.shift()!;
-    
-    this.handleTaskRequest(message)
-      .then(resolve)
-      .catch(reject);
+    const { message } = this.taskQueue.shift()!;
+
+    this.handleTaskRequest(message).catch(err => this.log(`Error processing queued task: ${err.message}`));
   }
 
   /**
@@ -527,11 +520,11 @@ export class CodexAdapter extends BaseAdapter {
    */
   private async testCodexCli(): Promise<void> {
     return new Promise((resolve, reject) => {
-      const process = spawn(this.config.cliPath, ['--version'], {
+      const childProcess = spawn(this.config.cliPath, ['--version'], {
         stdio: 'pipe'
       });
 
-      process.on('close', (code) => {
+      childProcess.on('close', (code: number | null) => {
         if (code === 0) {
           resolve();
         } else {
@@ -539,7 +532,7 @@ export class CodexAdapter extends BaseAdapter {
         }
       });
 
-      process.on('error', (error) => {
+      childProcess.on('error', (error: Error) => {
         reject(error);
       });
     });

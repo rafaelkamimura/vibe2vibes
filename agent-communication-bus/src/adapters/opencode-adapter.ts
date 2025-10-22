@@ -1,11 +1,7 @@
-import { EventEmitter } from 'events';
-import WebSocket from 'ws';
 import { spawn, ChildProcess } from 'child_process';
-import { 
-  AgentMessage, 
-  AgentDescriptor, 
-  AgentRegistration,
-  CommunicationBusConfig
+import {
+  AgentMessage,
+  AgentDescriptor
 } from '../types/protocol';
 import { BaseAdapter } from './base-adapter';
 
@@ -78,7 +74,6 @@ export class OpenCodeAdapter extends BaseAdapter {
    * Handle task request by executing OpenCode with appropriate parameters
    */
   private async handleTaskRequest(message: AgentMessage): Promise<void> {
-    const { task_type, payload } = message.payload;
     
     // Check concurrent task limit
     if (this.activeTasks.size >= this.config.maxConcurrentTasks!) {
@@ -116,7 +111,7 @@ export class OpenCodeAdapter extends BaseAdapter {
     return new Promise((resolve, reject) => {
       const startTime = Date.now();
       
-      const process = spawn(this.config.binaryPath, command.args, {
+      const childProcess = spawn(this.config.binaryPath, command.args, {
         cwd: this.config.workingDirectory,
         env: { ...process.env, ...this.config.environment },
         stdio: ['pipe', 'pipe', 'pipe']
@@ -125,21 +120,21 @@ export class OpenCodeAdapter extends BaseAdapter {
       let stdout = '';
       let stderr = '';
 
-      process.stdout?.on('data', (data) => {
+      childProcess.stdout?.on('data', (data: Buffer) => {
         stdout += data.toString();
       });
 
-      process.stderr?.on('data', (data) => {
+      childProcess.stderr?.on('data', (data: Buffer) => {
         stderr += data.toString();
       });
 
       // Set up timeout
       const timeout = setTimeout(() => {
-        process.kill('SIGKILL');
+        childProcess.kill('SIGKILL');
         reject(new Error(`OpenCode task timeout after ${this.config.timeout}ms`));
       }, this.config.timeout);
 
-      process.on('close', (code) => {
+      childProcess.on('close', (code: number | null) => {
         clearTimeout(timeout);
         const duration = Date.now() - startTime;
 
@@ -162,13 +157,13 @@ export class OpenCodeAdapter extends BaseAdapter {
         }
       });
 
-      process.on('error', (error) => {
+      childProcess.on('error', (error: Error) => {
         clearTimeout(timeout);
         reject(new Error(`OpenCode process error: ${error.message}`));
       });
 
       // Store process reference
-      this.processes.set(message.message_id, process);
+      this.processes.set(message.message_id, childProcess);
     });
   }
 
@@ -314,8 +309,8 @@ export class OpenCodeAdapter extends BaseAdapter {
     const lines = stdout.split('\n');
     const analysis = {
       root_cause: '',
-      suggested_fixes: [],
-      related_files: []
+      suggested_fixes: [] as string[],
+      related_files: [] as string[]
     };
 
     for (const line of lines) {
@@ -364,11 +359,9 @@ export class OpenCodeAdapter extends BaseAdapter {
       return;
     }
 
-    const { message, resolve, reject } = this.taskQueue.shift()!;
-    
-    this.handleTaskRequest(message)
-      .then(resolve)
-      .catch(reject);
+    const { message } = this.taskQueue.shift()!;
+
+    this.handleTaskRequest(message).catch(err => this.log(`Error processing queued task: ${err.message}`));
   }
 
   /**
@@ -376,11 +369,11 @@ export class OpenCodeAdapter extends BaseAdapter {
    */
   private async testOpenCodeBinary(): Promise<void> {
     return new Promise((resolve, reject) => {
-      const process = spawn(this.config.binaryPath, ['--version'], {
+      const childProcess = spawn(this.config.binaryPath, ['--version'], {
         stdio: 'pipe'
       });
 
-      process.on('close', (code) => {
+      childProcess.on('close', (code: number | null) => {
         if (code === 0) {
           resolve();
         } else {
@@ -388,7 +381,7 @@ export class OpenCodeAdapter extends BaseAdapter {
         }
       });
 
-      process.on('error', (error) => {
+      childProcess.on('error', (error: Error) => {
         reject(error);
       });
     });

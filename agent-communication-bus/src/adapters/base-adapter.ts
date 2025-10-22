@@ -1,10 +1,9 @@
 import { EventEmitter } from 'events';
 import WebSocket from 'ws';
-import { 
-  AgentMessage, 
-  AgentDescriptor, 
-  AgentRegistration,
-  CommunicationBusConfig
+import {
+  AgentMessage,
+  AgentDescriptor,
+  AgentRegistration
 } from '../types/protocol';
 
 export abstract class BaseAdapter extends EventEmitter {
@@ -163,12 +162,12 @@ export abstract class BaseAdapter extends EventEmitter {
    * Make HTTP request to communication bus
    */
   private async makeHttpRequest(
-    endpoint: string, 
+    endpoint: string,
     options: RequestInit
   ): Promise<any> {
     try {
       const response = await fetch(`${this.busUrl}${endpoint}`, options);
-      const data = await response.json();
+      const data: any = await response.json();
       
       if (!response.ok) {
         return {

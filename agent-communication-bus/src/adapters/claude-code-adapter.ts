@@ -1,10 +1,7 @@
-import { EventEmitter } from 'events';
-import WebSocket from 'ws';
+import { spawn, ChildProcess } from 'child_process';
 import { 
   AgentMessage, 
-  AgentDescriptor, 
-  AgentRegistration,
-  CommunicationBusConfig
+  AgentDescriptor
 } from '../types/protocol';
 import { BaseAdapter } from './base-adapter';
 
@@ -16,6 +13,11 @@ export interface ClaudeCodeConfig {
   maxConcurrentTasks?: number;
   workspacePath?: string;
   projectContext?: Record<string, any>;
+  pathToClaudeCodeExecutable?: string;
+  allowedTools?: string[];
+  disallowedTools?: string[];
+  permissionMode?: 'default' | 'acceptEdits' | 'bypassPermissions' | 'plan';
+  settingSources?: ('user' | 'project' | 'local')[];
 }
 
 export interface ClaudeCodeTask {
@@ -32,8 +34,8 @@ export interface ClaudeCodeTask {
 export class ClaudeCodeAdapter extends BaseAdapter {
   private config: ClaudeCodeConfig;
   private activeTasks: Map<string, Promise<any>> = new Map();
-  private taskQueue: Array<{ message: AgentMessage; resolve: Function; reject: Function }> = [];
-  private claudeClient: any; // Would be actual Claude client
+  private taskQueue: Array<{ message: AgentMessage; resolve: () => void; reject: (error: Error) => void }> = [];
+  private claudeProcesses: Map<string, ChildProcess> = new Map();
 
   constructor(
     agentId: string,
@@ -56,11 +58,11 @@ export class ClaudeCodeAdapter extends BaseAdapter {
   async initialize(): Promise<void> {
     await super.initialize();
     
-    // Initialize Claude client
+    // Test Claude Code executable availability
     try {
-      await this.initializeClaudeClient();
+      await this.testClaudeCodeExecutable();
     } catch (error) {
-      throw new Error(`Failed to initialize Claude client: ${(error as Error).message}`);
+      throw new Error(`Claude Code executable not available: ${(error as Error).message}`);
     }
 
     this.log('Claude Code adapter initialized successfully');
@@ -91,14 +93,12 @@ export class ClaudeCodeAdapter extends BaseAdapter {
    * Handle task request by invoking Claude Code with appropriate subagent
    */
   private async handleTaskRequest(message: AgentMessage): Promise<void> {
-    const { task_type, payload } = message.payload;
-    
     // Check concurrent task limit
     if (this.activeTasks.size >= this.config.maxConcurrentTasks!) {
       this.taskQueue.push({
         message,
         resolve: () => {},
-        reject: () => {}
+        reject: (_error: Error) => {}
       });
       return;
     }
@@ -123,26 +123,22 @@ export class ClaudeCodeAdapter extends BaseAdapter {
   private async executeClaudeCodeTask(message: AgentMessage): Promise<any> {
     const { task_type, payload } = message.payload;
     
-    // Convert task to Claude Code task
-    const claudeTask = this.buildClaudeTask(task_type, payload);
+    // Convert task to Claude Code command
+    const command = this.buildClaudeCommand(task_type, payload);
     
     const startTime = Date.now();
     
     try {
-      // Execute task with timeout
-      const result = await Promise.race([
-        this.invokeClaudeCode(claudeTask),
-        this.createTimeoutPromise(this.config.timeout!)
-      ]);
-
+      // Execute Claude Code process
+      const result = await this.spawnClaudeProcess(command, message.message_id);
+      
       const duration = Date.now() - startTime;
 
       return {
         ...result,
         metadata: {
           execution_time: duration,
-          subagent_type: claudeTask.subagent_type,
-          model: claudeTask.model || this.config.defaultModel,
+          command: command.description,
           task_type: task_type
         }
       };
@@ -155,218 +151,260 @@ export class ClaudeCodeAdapter extends BaseAdapter {
   }
 
   /**
-   * Build Claude Code task based on task type
+   * Build Claude Code command based on task type
    */
-  private buildClaudeTask(taskType: string, payload: any): ClaudeCodeTask {
-    const baseTask = {
-      type: taskType,
-      context: {
-        ...this.config.projectContext,
-        workspace_path: this.config.workspacePath,
-        ...payload.context
-      }
-    };
-
+  private buildClaudeCommand(taskType: string, payload: any): { args: string[]; description: string } {
     switch (taskType) {
       case 'code_review':
         return {
-          ...baseTask,
-          subagent_type: 'code-reviewer',
-          prompt: `Review the following code for quality, security, and best practices:\n\n${payload.code || payload.file_path}`,
+          args: [
+            'task',
+            'code-review',
+            '--subagent', 'code-reviewer',
+            '--prompt', `Review the following code for quality, security, and best practices:\n\n${payload.code || payload.file_path}`
+          ],
           description: 'Code review and analysis'
         };
 
       case 'architecture_design':
         return {
-          ...baseTask,
-          subagent_type: 'backend-architect',
-          prompt: `Design system architecture for: ${payload.requirements}\n\nConstraints: ${payload.constraints?.join(', ') || 'none'}`,
+          args: [
+            'task',
+            'architecture-design',
+            '--subagent', 'backend-architect',
+            '--prompt', `Design system architecture for: ${payload.requirements}\n\nConstraints: ${payload.constraints?.join(', ') || 'none'}`
+          ],
           description: 'System architecture design'
         };
 
       case 'security_analysis':
         return {
-          ...baseTask,
-          subagent_type: 'security-auditor',
-          prompt: `Perform security analysis on: ${payload.target}\n\nFocus areas: ${payload.focus_areas?.join(', ') || 'all'}`,
+          args: [
+            'task',
+            'security-analysis',
+            '--subagent', 'security-auditor',
+            '--prompt', `Perform security analysis on: ${payload.target}\n\nFocus areas: ${payload.focus_areas?.join(', ') || 'all'}`
+          ],
           description: 'Security vulnerability assessment'
         };
 
       case 'performance_optimization':
         return {
-          ...baseTask,
-          subagent_type: 'performance-engineer',
-          prompt: `Optimize performance for: ${payload.target}\n\nMetrics: ${payload.metrics?.join(', ') || 'speed,memory'}`,
+          args: [
+            'task',
+            'performance-optimization',
+            '--subagent', 'performance-engineer',
+            '--prompt', `Optimize performance for: ${payload.target}\n\nMetrics: ${payload.metrics?.join(', ') || 'speed,memory'}`
+          ],
           description: 'Performance optimization analysis'
         };
 
       case 'test_generation':
         return {
-          ...baseTask,
-          subagent_type: 'test-automator',
-          prompt: `Generate comprehensive tests for: ${payload.target}\n\nTest type: ${payload.test_type || 'unit'}`,
+          args: [
+            'task',
+            'test-generation',
+            '--subagent', 'test-automator',
+            '--prompt', `Generate comprehensive tests for: ${payload.target}\n\nTest type: ${payload.test_type || 'unit'}`
+          ],
           description: 'Automated test generation'
         };
 
       case 'debugging':
         return {
-          ...baseTask,
-          subagent_type: 'debugger',
-          prompt: `Debug the following issue: ${payload.error}\n\nContext: ${payload.context || 'No additional context'}`,
+          args: [
+            'task',
+            'debugging',
+            '--subagent', 'debugger',
+            '--prompt', `Debug the following issue: ${payload.error}\n\nContext: ${payload.context || 'No additional context'}`
+          ],
           description: 'Debugging and issue resolution'
         };
 
       case 'documentation':
         return {
-          ...baseTask,
-          subagent_type: 'technical-writer',
-          prompt: `Create documentation for: ${payload.target}\n\nType: ${payload.doc_type || 'api'}`,
+          args: [
+            'task',
+            'documentation',
+            '--subagent', 'technical-writer',
+            '--prompt', `Create documentation for: ${payload.target}\n\nType: ${payload.doc_type || 'api'}`
+          ],
           description: 'Technical documentation generation'
         };
 
       case 'database_optimization':
         return {
-          ...baseTask,
-          subagent_type: 'database-optimizer',
-          prompt: `Optimize database for: ${payload.target}\n\nFocus: ${payload.optimization_type || 'query_performance'}`,
+          args: [
+            'task',
+            'database-optimization',
+            '--subagent', 'database-optimizer',
+            '--prompt', `Optimize database for: ${payload.target}\n\nFocus: ${payload.optimization_type || 'query_performance'}`
+          ],
           description: 'Database optimization and tuning'
         };
 
       case 'frontend_development':
         return {
-          ...baseTask,
-          subagent_type: 'frontend-developer',
-          prompt: `Develop frontend component: ${payload.specification}\n\nFramework: ${payload.framework || 'React'}`,
+          args: [
+            'task',
+            'frontend-development',
+            '--subagent', 'frontend-developer',
+            '--prompt', `Develop frontend component: ${payload.specification}\n\nFramework: ${payload.framework || 'React'}`
+          ],
           description: 'Frontend component development'
         };
 
       case 'backend_development':
         return {
-          ...baseTask,
-          subagent_type: 'backend-developer',
-          prompt: `Develop backend service: ${payload.specification}\n\nLanguage: ${payload.language || 'TypeScript'}`,
+          args: [
+            'task',
+            'backend-development',
+            '--subagent', 'backend-developer',
+            '--prompt', `Develop backend service: ${payload.specification}\n\nLanguage: ${payload.language || 'TypeScript'}`
+          ],
           description: 'Backend service development'
         };
 
       case 'golang_development':
         return {
-          ...baseTask,
-          subagent_type: 'golang-pro',
-          prompt: `Develop Go solution: ${payload.specification}\n\nFocus: ${payload.focus || 'idiomatic_go'}`,
+          args: [
+            'task',
+            'golang-development',
+            '--subagent', 'golang-pro',
+            '--prompt', `Develop Go solution: ${payload.specification}\n\nFocus: ${payload.focus || 'idiomatic_go'}`
+          ],
           description: 'Go language development'
         };
 
       case 'python_development':
         return {
-          ...baseTask,
-          subagent_type: 'python-pro',
-          prompt: `Develop Python solution: ${payload.specification}\n\nFocus: ${payload.focus || 'best_practices'}`,
+          args: [
+            'task',
+            'python-development',
+            '--subagent', 'python-pro',
+            '--prompt', `Develop Python solution: ${payload.specification}\n\nFocus: ${payload.focus || 'best_practices'}`
+          ],
           description: 'Python language development'
         };
 
       default:
         return {
-          ...baseTask,
-          subagent_type: payload.subagent_type || 'general',
-          prompt: payload.prompt || `Execute task: ${taskType}\n\nDetails: ${JSON.stringify(payload)}`,
+          args: [
+            'task',
+            taskType,
+            '--subagent', payload.subagent_type || 'general',
+            '--prompt', payload.prompt || `Execute task: ${taskType}\n\nDetails: ${JSON.stringify(payload)}`
+          ],
           description: payload.description || `Generic task: ${taskType}`
         };
     }
   }
 
-  /**
-   * Invoke Claude Code with task
+/**
+   * Spawn Claude Code process with command
    */
-  private async invokeClaudeCode(task: ClaudeCodeTask): Promise<any> {
-    // This would integrate with actual Claude Code API
-    // For now, simulate the response
-    
-    const response = await this.simulateClaudeCodeCall(task);
-    
-    return {
-      type: task.type,
-      subagent_type: task.subagent_type,
-      result: response.content,
-      analysis: response.analysis,
-      recommendations: response.recommendations,
-      confidence: response.confidence || 0.85
-    };
-  }
+  private async spawnClaudeProcess(command: { args: string[]; description: string }, messageId: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const startTime = Date.now();
+      
+      const childProcess = spawn(this.config.pathToClaudeCodeExecutable || 'claude', command.args, {
+        cwd: this.config.workspacePath || process.cwd(),
+        env: {
+          ...process.env,
+          ANTHROPIC_API_KEY: this.config.claudeApiKey || process.env.ANTHROPIC_API_KEY
+        },
+        stdio: ['pipe', 'pipe', 'pipe']
+      });
 
-  /**
-   * Simulate Claude Code API call (placeholder)
-   */
-  private async simulateClaudeCodeCall(task: ClaudeCodeTask): Promise<any> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 3000));
+      let stdout = '';
+      let stderr = '';
 
-    // Generate mock response based on task type
-    switch (task.type) {
-      case 'code_review':
-        return {
-          content: 'Code review completed. Found 3 minor issues and 2 suggestions for improvement.',
-          analysis: {
-            issues: [
-              { type: 'style', line: 15, description: 'Missing error handling' },
-              { type: 'security', line: 23, description: 'Potential SQL injection' },
-              { type: 'performance', line: 31, description: 'Inefficient loop' }
-            ],
-            suggestions: [
-              'Add input validation',
-              'Implement proper error handling'
-            ]
-          },
-          recommendations: ['Address security issues first', 'Refactor for better performance'],
-          confidence: 0.92
-        };
+      childProcess.stdout?.on('data', (data: Buffer) => {
+        stdout += data.toString();
+      });
 
-      case 'architecture_design':
-        return {
-          content: 'Architecture design completed. Recommended microservices approach with event-driven communication.',
-          analysis: {
-            pattern: 'Microservices',
-            components: ['API Gateway', 'Auth Service', 'Business Logic Services', 'Data Layer'],
-            communication: 'REST APIs + Message Queue'
-          },
-          recommendations: ['Start with core services', 'Implement CI/CD pipeline'],
-          confidence: 0.88
-        };
+      childProcess.stderr?.on('data', (data: Buffer) => {
+        stderr += data.toString();
+      });
 
-      default:
-        return {
-          content: `Task ${task.type} completed successfully using ${task.subagent_type} subagent.`,
-          analysis: { status: 'completed', method: task.subagent_type },
-          recommendations: ['Review results', 'Test implementation'],
-          confidence: 0.85
-        };
-    }
-  }
+      // Set up timeout
+      const timeout = setTimeout(() => {
+        childProcess.kill('SIGKILL');
+        reject(new Error(`Claude Code task timeout after ${this.config.timeout}ms`));
+      }, this.config.timeout);
 
-  /**
-   * Create timeout promise
-   */
-  private createTimeoutPromise(timeout: number): Promise<never> {
-    return new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('TIMEOUT')), timeout);
+      childProcess.on('close', (code: number | null) => {
+        clearTimeout(timeout);
+        const duration = Date.now() - startTime;
+
+        if (code === 0) {
+          try {
+            const result = this.parseClaudeOutput(stdout, command.description);
+            resolve({
+              ...result,
+              metadata: {
+                execution_time: duration,
+                exit_code: code,
+                command: command.description
+              }
+            });
+          } catch (parseError) {
+            reject(new Error(`Failed to parse Claude Code output: ${(parseError as Error).message}`));
+          }
+        } else {
+          reject(new Error(`Claude Code failed with exit code ${code}: ${stderr}`));
+        }
+      });
+
+      childProcess.on('error', (error: Error) => {
+        clearTimeout(timeout);
+        reject(new Error(`Claude Code process error: ${error.message}`));
+      });
+
+      // Store process reference
+      this.claudeProcesses.set(messageId, childProcess);
     });
   }
 
   /**
-   * Initialize Claude client
+   * Parse Claude Code output
    */
-  private async initializeClaudeClient(): Promise<void> {
-    // This would initialize actual Claude client
-    // For now, just validate configuration
-    const apiKey = this.config.claudeApiKey || process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
-      throw new Error('Claude API key not provided');
+  private parseClaudeOutput(stdout: string, taskDescription: string): any {
+    try {
+      // Try to parse as JSON first
+      return JSON.parse(stdout);
+    } catch {
+      // Fallback to text parsing
+      return {
+        type: 'claude_code_response',
+        content: stdout,
+        task_description: taskDescription,
+        raw_output: stdout
+      };
     }
+  }
 
-    // Mock client initialization
-    this.claudeClient = {
-      apiKey,
-      baseUrl: this.config.baseUrl || 'https://api.anthropic.com'
-    };
+  /**
+   * Test Claude Code executable availability
+   */
+  private async testClaudeCodeExecutable(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const childProcess = spawn(this.config.pathToClaudeCodeExecutable || 'claude', ['--version'], {
+        stdio: 'pipe'
+      });
+
+      childProcess.on('close', (code: number | null) => {
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`Claude Code executable not accessible (exit code: ${code})`));
+        }
+      });
+
+      childProcess.on('error', (error: Error) => {
+        reject(error);
+      });
+    });
   }
 
   /**
@@ -389,11 +427,9 @@ export class ClaudeCodeAdapter extends BaseAdapter {
       return;
     }
 
-    const { message, resolve, reject } = this.taskQueue.shift()!;
-    
-    this.handleTaskRequest(message)
-      .then(resolve)
-      .catch(reject);
+    const { message } = this.taskQueue.shift()!;
+
+    this.handleTaskRequest(message).catch(err => this.log(`Error processing queued task: ${err.message}`));
   }
 
   /**
@@ -466,16 +502,17 @@ export class ClaudeCodeAdapter extends BaseAdapter {
    * Cleanup method
    */
   async shutdown(): Promise<void> {
-    // Cancel all active tasks
-    for (const [messageId, taskPromise] of this.activeTasks) {
+    // Kill all running Claude processes
+    for (const [messageId, process] of this.claudeProcesses) {
       try {
-        // Would implement task cancellation
-        this.log(`Cancelling task ${messageId}`);
+        process.kill('SIGTERM');
+        this.log(`Killed Claude process for task ${messageId}`);
       } catch (error) {
-        this.log(`Error cancelling task ${messageId}: ${(error as Error).message}`);
+        this.log(`Error killing process ${messageId}: ${(error as Error).message}`);
       }
     }
 
+    this.claudeProcesses.clear();
     this.activeTasks.clear();
     this.taskQueue.length = 0;
 
@@ -494,10 +531,10 @@ function createDefaultClaudeCodeDescriptor(agentId: string): AgentDescriptor {
       input_types: ['code', 'documentation', 'requirements', 'error_logs', 'specifications'],
       output_types: ['analysis', 'recommendations', 'generated_code', 'documentation', 'fixes'],
       languages: ['javascript', 'typescript', 'python', 'go', 'java', 'c++', 'rust', 'sql', 'html', 'css'],
-      tools: ['git', 'docker', 'kubernetes', 'aws', 'azure', 'gcp', 'testing_frameworks', 'ci_cd'],
+      tools: ['git', 'docker', 'kubernetes', 'aws', 'azure', 'gcp', 'testing_frameworks', 'ci_cd', 'claude-code-cli'],
       model_preferences: ['claude-3.5-sonnet', 'claude-3-opus', 'claude-3-haiku'],
       performance_profile: {
-        avg_response_time: '6s',
+        avg_response_time: '8s',
         success_rate: 0.94,
         concurrent_capacity: 3
       }
@@ -511,7 +548,7 @@ function createDefaultClaudeCodeDescriptor(agentId: string): AgentDescriptor {
       version: '1.0.0',
       author: 'claude-code-team',
       tags: ['ai_assistant', 'code_analysis', 'architecture', 'debugging', 'optimization'],
-      description: 'Claude Code adapter for AI-powered development assistance and analysis'
+      description: 'Claude Code adapter for AI-powered development assistance and analysis using Claude Agent SDK'
     }
   };
 }
