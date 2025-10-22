@@ -39,6 +39,37 @@ That's it. No complex setup, no configuration hell, no wrestling with APIs.
 
 ---
 
+## 📚 Documentation
+
+Complete documentation is available in the [`docs/`](./docs/) directory:
+
+### Getting Started
+- **[Quick Start Guide](./docs/quickstart.md)** - Get running in 5 minutes
+- **[API Reference](./docs/api/)** - HTTP endpoints, WebSocket protocol, message format
+- **[Troubleshooting](./docs/troubleshooting.md)** - Common issues and solutions
+
+### Integration Guides
+- **[Claude Code Integration](./docs/integrations/claude-code.md)** - Natural language delegation
+- **[OpenCode Integration](./docs/integrations/opencode.md)** - Systems programming tasks
+- **[Codex CLI Integration](./docs/integrations/codex-cli.md)** - Full-stack development
+
+### Development
+- **[Architecture Overview](./docs/development/architecture.md)** - System design and components
+- **[Contributing Guide](./docs/development/CONTRIBUTING.md)** - How to contribute
+- **[Testing Guide](./docs/development/testing.md)** - Writing and running tests
+- **[Deployment Guide](./docs/development/deployment.md)** - Production deployment
+
+### Tutorials
+- **[Multi-Agent Collaboration](./docs/tutorials/multi-agent-collaboration.md)** - Coordinate multiple agents
+- **[Custom Adapter Development](./docs/tutorials/custom-adapter.md)** - Build your own adapter
+- **[Session Management](./docs/tutorials/session-management.md)** - Manage workflows
+
+### Project Planning
+- **[Roadmap](./docs/roadmap.md)** - Current status and future plans
+- **[Implementation Status](./docs/implementation-status.md)** - Detailed progress tracking
+
+---
+
 ## Real-World Usage Patterns
 
 ### The "Swarm Attack" - Parallel Processing
