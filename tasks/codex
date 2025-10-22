@@ -143,27 +143,48 @@
 
 **Note:** This is exploratory work, won't block other development
 
-- [ ] Create `dashboard/` directory structure
-- [ ] Set up React + TypeScript project
+- [x] Create `dashboard/` directory structure
+- [x] Set up React + TypeScript project
   - Vite for fast development
   - TailwindCSS for styling
   - WebSocket client for real-time updates
-- [ ] Create basic dashboard layout
+- [x] Create basic dashboard layout
   - Header/navigation
   - Sidebar for agents
   - Main content area for messages
-- [ ] Create agent status component
+- [x] Create agent status component
   - List registered agents
   - Show health status
   - Display capabilities
-- [ ] Create message flow visualizer
+- [x] Create message flow visualizer
   - Real-time message stream
   - Filter by agent/session
   - Message details view
-- [ ] Create session monitor
+- [x] Create session monitor
   - Active sessions list
   - Workflow progress visualization
   - Participant status
+- [x] Add metrics overview strip
+  - Display total messages, active sessions, error rate (mocked initially)
+  - Highlight key health indicators
+- [x] Add message inspector drawer/modal
+  - Show full JSON payload on selection
+  - Provide metadata (timestamps, routing info)
+- [ ] Add agent detail drawer
+  - Show capabilities, last heartbeat, current tasks
+  - Allow mock status toggles for demo purposes
+- [ ] Enhance session timeline
+  - Visual workflow stepper with timestamps
+  - Display per-step participants and status
+- [ ] Add control panel for mock simulation
+  - Adjust message cadence, toggle agent health, trigger mock errors
+  - Reset simulations quickly
+- [ ] Add notifications/toasts
+  - Surface error/warning/info events
+  - Allow dismiss or auto-expire
+- [ ] Add theme/status bar
+  - Display connection status, last refresh time
+  - Manual refresh button and theme toggle
 
 ### 5. Build Scripts & Utilities (MEDIUM PRIORITY)
 

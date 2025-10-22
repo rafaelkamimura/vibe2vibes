@@ -42,7 +42,7 @@ describe('SessionManager', () => {
     it('should create a new session successfully', () => {
       const orchestrator = 'claude://test-agent';
       const participants = [MockDataGenerator.createAgentParticipant()];
-      const workflow = MockDataGenerator.createWorkflowSteps();
+      const workflow = MockDataGenerator.createWorkflowState().steps || [];
       
       const sessionId = sessionManager.createSession(orchestrator, participants, workflow);
 
@@ -61,7 +61,7 @@ describe('SessionManager', () => {
       const eventSpy = jest.fn();
       
       sessionManager.on('session_created', eventSpy);
-      const sessionId = sessionManager.createSession(orchestrator);
+      sessionManager.createSession(orchestrator);
 
       expect(eventSpy).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -74,7 +74,7 @@ describe('SessionManager', () => {
     it('should create session with minimal parameters', () => {
       const orchestrator = 'opencode://minimal-agent';
       
-      const sessionId = sessionManager.createSession(orchestrator);
+      sessionManager.createSession(orchestrator);
       const session = sessionManager.getSession(sessionId);
       
       expect(session).toBeDefined();
@@ -94,7 +94,7 @@ describe('SessionManager', () => {
     });
 
     it('should retrieve existing session by ID', () => {
-      const retrieved = await sessionManager.getSession(testSession.sessionId);
+      const retrieved = sessionManager.getSession(testSessionId);
       expect(retrieved).toBeDefined();
       expect(retrieved?.sessionId).toBe(testSession.sessionId);
     });
@@ -192,7 +192,7 @@ describe('SessionManager', () => {
 
     beforeEach(() => {
       const orchestrator = 'claude://test-agent';
-      const workflow = MockDataGenerator.createWorkflowSteps();
+      const workflow = MockDataGenerator.createWorkflowState().steps || [];
       testSessionId = sessionManager.createSession(orchestrator, [], workflow);
     });
 
@@ -223,7 +223,7 @@ describe('SessionManager', () => {
     });
 
     it('should advance to specific step', () => {
-      const workflow = MockDataGenerator.createWorkflowSteps();
+      const workflow = MockDataGenerator.createWorkflowState().steps || [];
       const targetStep = workflow[1]?.name || 'custom_step';
 
       const result = sessionManager.advanceWorkflow(testSessionId, targetStep);
@@ -377,7 +377,7 @@ describe('SessionManager', () => {
     let testSessionId: string;
 
     beforeEach(() => {
-      const workflow = MockDataGenerator.createWorkflowSteps();
+      const workflow = MockDataGenerator.createWorkflowState().steps || [];
       testSessionId = sessionManager.createSession('claude://test-agent', [], workflow);
     });
 
