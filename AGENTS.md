@@ -46,3 +46,9 @@ import { AgentMessage, AgentDescriptor } from '../types/protocol';
 - Use JSDoc comments for public methods and classes
 - Document parameters with `@param` and return values with `@returns`
 - Include usage examples in factory methods
+
+## Task Delegation
+- Preserve task delegation files under `@tasks/` directory
+- Each agent (claude, codex, opencode) maintains separate task files
+- Update task status and progress in respective files
+- Coordinate dependencies between agents through task documentation

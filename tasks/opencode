@@ -1,0 +1,43 @@
+# OpenCode Testing Infrastructure Tasks
+
+## Current Status
+- Claude agent is fixing TypeScript compilation errors in claude-code-adapter.ts
+- Need parallel work on testing infrastructure to prepare for validation
+
+## Testing Infrastructure Tasks
+
+### Phase 1: Test Environment Setup ✅ COMPLETED
+- [x] Create tests/fixtures/ directory structure
+- [x] Set up Jest test environment configuration
+- [x] Create mock data generators for messages, agents, sessions
+- [x] Set up test database configuration (in-memory or test instance)
+
+### Phase 2: Unit Tests (Using Mocks) - IN PROGRESS
+- [ ] Write test cases for CommunicationBus core functionality
+- [ ] Write test cases for MessageRouter routing logic
+- [ ] Write test cases for SessionManager lifecycle
+- [ ] Write test cases for ModelSelector strategy patterns
+- [ ] Write test cases for ResultAggregator algorithms
+
+### Phase 3: Integration Tests
+- [ ] Create integration test framework structure
+- [ ] Write adapter integration tests (using mocks initially)
+- [ ] Write end-to-end message flow tests
+- [ ] Write session management integration tests
+- [ ] Write multi-agent orchestration tests
+
+### Phase 4: Test Utilities & Fixtures
+- [x] Create test helper utilities
+- [x] Create comprehensive test fixtures for all scenarios
+- [ ] Set up test coverage reporting
+- [ ] Create performance test benchmarks
+
+## Notes
+- All tests should use mocks initially to avoid conflicts with adapter development
+- Focus on testing business logic and message flow
+- Tests should be ready to validate Claude's TypeScript fixes
+- Use dependency injection patterns to enable easy mocking
+
+## Dependencies
+- Waiting for TypeScript compilation errors to be resolved
+- Will need actual adapter implementations for final integration tests

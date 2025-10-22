@@ -1,0 +1,136 @@
+# Claude Code TypeScript Compilation Fixes
+
+## Current Status
+- 26 TypeScript compilation errors blocking build
+- Core infrastructure is complete, just needs type safety fixes
+- All modules compile successfully to dist/ but with errors
+
+## Priority Tasks
+
+### 1. Fix Module Import Errors (HIGH PRIORITY)
+**Files Affected:**
+- `src/message-router.ts:2` - Cannot find module '../types/protocol'
+- `src/model-selector.ts:2` - Cannot find module '../types/protocol'
+- `src/result-aggregator.ts:10` - Cannot find module '../types/protocol'
+- `src/session-manager.ts:3` - Cannot find module '../types/protocol'
+
+**Analysis:**
+The protocol types file exists but TypeScript can't resolve it. This is likely:
+- Missing file extension in import (.js vs .ts)
+- tsconfig.json path resolution issue
+- Circular dependency problem
+
+**Tasks:**
+- [ ] Verify src/types/protocol.ts exists and exports are correct
+- [ ] Check tsconfig.json module resolution settings
+- [ ] Ensure all imports use consistent path format
+- [ ] Test if adding .js extension to imports helps (TS module resolution)
+
+### 2. Fix Unused Variable Warnings (MEDIUM PRIORITY)
+**Files Affected:**
+- `src/communication-bus.ts:28` - '_modelSelector' unused
+- `src/communication-bus.ts:29` - '_resultAggregator' unused
+- `src/model-selector.ts:2` - 'AgentDescriptor' unused
+- `src/model-selector.ts:302` - 'maxLatency' unused
+- `src/result-aggregator.ts:8` - 'AggregationMetadata' unused
+- `src/result-aggregator.ts:9` - 'AgentDescriptor' unused
+- `src/result-aggregator.ts:337` - 'totalWeight' unused
+- `src/result-aggregator.ts:353,467` - 'results' unused (multiple)
+- `src/result-aggregator.ts:503,517,529` - 'request' unused (multiple)
+- `src/session-manager.ts:3` - 'AgentMessage' unused
+
+**Tasks:**
+- [ ] Remove unused imports (AgentDescriptor, AgentMessage, etc.)
+- [ ] Add underscore prefix to intentionally unused variables (_modelSelector, _resultAggregator)
+- [ ] Remove genuinely unused code (totalWeight, some results/request variables)
+- [ ] Consider if any of these are needed for future functionality
+
+### 3. Fix Implicit Any Type Errors (MEDIUM PRIORITY)
+**Files Affected:**
+- `src/model-selector.ts:103` - Parameter 'task' has implicit 'any'
+- `src/result-aggregator.ts:106` - Parameter 'r' has implicit 'any'
+- `src/session-manager.ts:128` - Parameter 'p' has implicit 'any'
+- `src/session-manager.ts:280` - Parameter 'step' has implicit 'any'
+- `src/session-manager.ts:324` - Parameter 'participant' has implicit 'any'
+
+**Tasks:**
+- [ ] Add explicit type annotations to all callback parameters
+- [ ] Use proper types from protocol.ts where available
+- [ ] For array methods (map, filter, etc.), ensure proper generic types
+
+### 4. Fix Type Assignment Errors (HIGH PRIORITY)
+**Files Affected:**
+- `src/communication-bus.ts:221,223,226` - Argument type 'string' not assignable to 'never'
+- `src/communication-bus.ts:415` - sessionId type mismatch with exactOptionalPropertyTypes
+
+**Analysis:**
+These are likely due to:
+- Type narrowing issues (TypeScript thinks arrays are never[])
+- strictNullChecks with optional properties
+- Need to review the specific code context
+
+**Tasks:**
+- [ ] Check line 221,223,226 in communication-bus.ts for array type issues
+- [ ] Fix sessionId optional property handling (line 415)
+- [ ] Ensure proper type guards or assertions where needed
+- [ ] Consider if exactOptionalPropertyTypes can be relaxed in tsconfig
+
+## Approach Strategy
+
+**Phase 1: Fix Import Issues (30 min)**
+This is blocking everything else. Once imports work, many other errors might resolve.
+
+**Phase 2: Clean Up Unused Code (30 min)**
+Remove unused imports and variables to reduce noise in error output.
+
+**Phase 3: Add Type Annotations (45 min)**
+Add explicit types to all implicit any parameters.
+
+**Phase 4: Fix Type Assignment Issues (45 min)**
+Address the complex type assignment and optional property errors.
+
+**Total Estimated Time: 2.5 hours**
+
+## Testing Strategy
+
+After each phase:
+```bash
+npm run build
+```
+
+Final validation:
+```bash
+npm run build    # Should complete with 0 errors
+npm run lint     # Should pass
+npm run format   # Apply formatting
+git diff         # Review all changes
+```
+
+## Notes
+
+- Some of these errors might be design decisions (intentionally unused future features)
+- Consider documenting why certain variables are unused with comments
+- May need to adjust tsconfig.json strictness settings if issues persist
+- Keep changes minimal and focused on compilation errors only
+
+## Dependencies
+
+**Blocked by:** None (can start immediately)
+**Blocks:**
+- OpenCode testing infrastructure (needs clean build)
+- Codex documentation work (needs working code to document)
+- All integration testing
+
+## Success Criteria
+
+- [ ] `npm run build` completes with 0 errors
+- [ ] All src/ files compile to dist/ successfully
+- [ ] No runtime errors introduced by type fixes
+- [ ] Code remains functionally equivalent
+- [ ] Git commit with clear description of fixes
+
+---
+**Created:** 2025-10-22
+**Priority:** CRITICAL
+**Estimated Time:** 2.5 hours
+**Assigned To:** Claude Code Agent
