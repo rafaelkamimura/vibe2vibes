@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { ModelDescriptor, AgentDescriptor } from './types/protocol';
+import { ModelDescriptor } from './types/protocol';
 
 export interface ModelSelectionCriteria {
   taskType: string;
@@ -299,7 +299,7 @@ export class ModelSelector extends EventEmitter {
 
       // Apply constraints
       if (criteria.constraints) {
-        const { maxCost, maxLatency, preferredProviders, excludedProviders } = criteria.constraints;
+        const { maxCost, maxLatency: _maxLatency, preferredProviders, excludedProviders } = criteria.constraints;
 
         if (maxCost && model.cost_per_token > maxCost) {
           return false;

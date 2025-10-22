@@ -4,9 +4,7 @@ import {
   ResultAggregation,
   AgentResult,
   ResultSynthesis,
-  Conflict,
-  AggregationMetadata,
-  AgentDescriptor
+  Conflict
 } from './types/protocol';
 
 export interface AggregationRequest {
@@ -334,9 +332,10 @@ export class ResultAggregator extends EventEmitter {
     weights: Record<string, number>
   ): ResultSynthesis {
     // Calculate weighted average of results
-    const totalWeight = results.reduce((sum, r) => 
+    const _totalWeight = results.reduce((sum, r) =>
       sum + (weights[r.agent_id] || r.confidence), 0
     );
+    void _totalWeight; // Reserved for future weighted calculation
 
     const weightedResult = this.combineWeightedResults(results, weights);
     const avgConfidence = results.reduce((sum, r) => sum + r.confidence, 0) / results.length;
@@ -350,7 +349,7 @@ export class ResultAggregator extends EventEmitter {
     };
   }
 
-  private manualSynthesis(results: AgentResult[], conflicts: Conflict[]): ResultSynthesis {
+  private manualSynthesis(_results: AgentResult[], conflicts: Conflict[]): ResultSynthesis {
     return {
       unified_result: null, // Requires manual intervention
       confidence_score: 0,
@@ -464,7 +463,7 @@ export class ResultAggregator extends EventEmitter {
   }
 
   private generateWeightedRecommendations(
-    results: AgentResult[], 
+    _results: AgentResult[],
     weights: Record<string, number>
   ): string[] {
     const recommendations: string[] = [];
@@ -499,8 +498,8 @@ export class ResultAggregator extends EventEmitter {
   }
 
   private resolveResultDisagreement(
-    conflict: Conflict, 
-    request: AggregationRequest
+    conflict: Conflict,
+    _request: AggregationRequest
   ): ConflictResolution {
     // Simple resolution - prefer higher confidence agent
     // In practice, this would be more sophisticated
@@ -513,8 +512,8 @@ export class ResultAggregator extends EventEmitter {
   }
 
   private resolveApproachDifference(
-    conflict: Conflict, 
-    request: AggregationRequest
+    conflict: Conflict,
+    _request: AggregationRequest
   ): ConflictResolution {
     return {
       conflict,
@@ -525,8 +524,8 @@ export class ResultAggregator extends EventEmitter {
   }
 
   private resolvePriorityConflict(
-    conflict: Conflict, 
-    request: AggregationRequest
+    conflict: Conflict,
+    _request: AggregationRequest
   ): ConflictResolution {
     return {
       conflict,

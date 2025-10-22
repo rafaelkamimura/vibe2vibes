@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { v4 as uuidv4 } from 'uuid';
-import { AgentMessage, SessionContext, AgentParticipant, WorkflowStep } from './types/protocol';
+import { SessionContext, AgentParticipant, WorkflowStep } from './types/protocol';
 
 export interface SessionConfig {
   timeout?: number;

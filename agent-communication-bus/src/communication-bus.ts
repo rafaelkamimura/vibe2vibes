@@ -22,10 +22,12 @@ export class CommunicationBus extends EventEmitter {
   private server: Server;
   private wss: WebSocketServer;
   private config: CommunicationBusConfig;
-  
+
   private sessionManager: SessionManager;
   private messageRouter: MessageRouter;
+  /** @deprecated Reserved for future intelligent model selection integration */
   private _modelSelector: ModelSelector;
+  /** @deprecated Reserved for future multi-agent result aggregation */
   private _resultAggregator: ResultAggregator;
   
   private registeredAgents: Map<string, AgentDescriptor> = new Map();
@@ -53,7 +55,11 @@ export class CommunicationBus extends EventEmitter {
     this.messageRouter = new MessageRouter(this.registeredAgents);
     this._modelSelector = new ModelSelector();
     this._resultAggregator = new ResultAggregator();
-    
+
+    // Reserved for future use - suppress unused variable warnings
+    void this._modelSelector;
+    void this._resultAggregator;
+
     this.metrics = {
       total_messages: 0,
       active_sessions: 0,
@@ -414,7 +420,7 @@ export class CommunicationBus extends EventEmitter {
       message.payload,
       {
         priority: message.priority,
-        sessionId: message.sender.session_id,
+        ...(message.sender.session_id !== undefined && { sessionId: message.sender.session_id }),
         timeout: parseInt(message.routing.timeout)
       }
     );
