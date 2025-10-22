@@ -1,13 +1,13 @@
 import { EventEmitter } from 'events';
 import { v4 as uuidv4 } from 'uuid';
-import { 
-  ResultAggregation, 
-  AgentResult, 
-  ResultSynthesis, 
-  Conflict, 
+import {
+  ResultAggregation,
+  AgentResult,
+  ResultSynthesis,
+  Conflict,
   AggregationMetadata,
   AgentDescriptor
-} from '../types/protocol';
+} from './types/protocol';
 
 export interface AggregationRequest {
   sessionId: string;

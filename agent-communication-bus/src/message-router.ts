@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { AgentMessage, AgentDescriptor } from '../types/protocol';
+import { AgentMessage, AgentDescriptor } from './types/protocol';
 
 export interface RoutingResult {
   success: boolean;

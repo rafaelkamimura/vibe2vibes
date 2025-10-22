@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { ModelDescriptor, AgentDescriptor } from '../types/protocol';
+import { ModelDescriptor, AgentDescriptor } from './types/protocol';
 
 export interface ModelSelectionCriteria {
   taskType: string;
