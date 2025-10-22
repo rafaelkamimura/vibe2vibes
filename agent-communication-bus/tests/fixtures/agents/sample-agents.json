@@ -1,0 +1,83 @@
+{
+  "claude-code": {
+    "agent_id": "claude-code-001",
+    "framework": "claude-code",
+    "capabilities": {
+      "input_types": ["text", "code", "markdown"],
+      "output_types": ["text", "code", "markdown"],
+      "languages": ["typescript", "javascript", "python", "go"],
+      "tools": ["eslint", "prettier", "jest", "git"],
+      "model_preferences": ["claude-3-opus", "claude-3-sonnet"],
+      "performance_profile": {
+        "avg_response_time": "200ms",
+        "success_rate": 0.97,
+        "concurrent_capacity": 3
+      }
+    },
+    "endpoints": {
+      "http": "http://localhost:3001/claude-code",
+      "websocket": "ws://localhost:3001/claude-code/ws",
+      "mcp": "mcp://localhost:3001/claude-code"
+    },
+    "metadata": {
+      "version": "1.0.0",
+      "author": "Anthropic",
+      "tags": ["ai", "coding", "review"],
+      "description": "Claude Code agent for software development tasks"
+    }
+  },
+  "opencode": {
+    "agent_id": "opencode-001",
+    "framework": "opencode",
+    "capabilities": {
+      "input_types": ["text", "code", "json"],
+      "output_types": ["text", "code", "json"],
+      "languages": ["typescript", "javascript", "python"],
+      "tools": ["npm", "node", "docker", "kubernetes"],
+      "model_preferences": ["gpt-4", "gpt-3.5-turbo"],
+      "performance_profile": {
+        "avg_response_time": "150ms",
+        "success_rate": 0.94,
+        "concurrent_capacity": 5
+      }
+    },
+    "endpoints": {
+      "http": "http://localhost:3002/opencode",
+      "websocket": "ws://localhost:3002/opencode/ws",
+      "mcp": "mcp://localhost:3002/opencode"
+    },
+    "metadata": {
+      "version": "1.0.0",
+      "author": "OpenCode Team",
+      "tags": ["ai", "development", "testing"],
+      "description": "OpenCode agent for development and testing workflows"
+    }
+  },
+  "codex-cli": {
+    "agent_id": "codex-cli-001",
+    "framework": "codex-cli",
+    "capabilities": {
+      "input_types": ["text", "code", "yaml"],
+      "output_types": ["text", "code", "yaml"],
+      "languages": ["go", "python", "bash", "yaml"],
+      "tools": ["go", "python", "docker", "kubectl", "helm"],
+      "model_preferences": ["codex", "gpt-4"],
+      "performance_profile": {
+        "avg_response_time": "100ms",
+        "success_rate": 0.96,
+        "concurrent_capacity": 8
+      }
+    },
+    "endpoints": {
+      "http": "http://localhost:3003/codex-cli",
+      "websocket": "ws://localhost:3003/codex-cli/ws",
+      "mcp": "mcp://localhost:3003/codex-cli"
+    },
+    "metadata": {
+      "version": "1.0.0",
+      "author": "Codex Team",
+      "tags": ["cli", "infrastructure", "devops"],
+      "description": "Codex CLI agent for infrastructure and DevOps tasks"
+    }
+  }
+}
