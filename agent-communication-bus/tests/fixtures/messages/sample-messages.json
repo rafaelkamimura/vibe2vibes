@@ -1,0 +1,226 @@
+{
+  "task_request": {
+    "message_id": "task-001",
+    "timestamp": "2024-01-01T10:00:00Z",
+    "sender": {
+      "agent_id": "claude-code-001",
+      "framework": "claude-code",
+      "session_id": "session-001"
+    },
+    "recipient": {
+      "agent_id": "opencode-001",
+      "framework": "opencode",
+      "session_id": "session-001"
+    },
+    "message_type": "task_request",
+    "priority": "high",
+    "payload": {
+      "task_type": "code_review",
+      "description": "Review TypeScript code for quality and security",
+      "files": ["src/communication-bus.ts", "src/message-router.ts"],
+      "requirements": ["security", "performance", "maintainability"],
+      "context": {
+        "project": "agent-communication-bus",
+        "deadline": "2024-01-01T18:00:00Z"
+      }
+    },
+    "routing": {
+      "timeout": "30m",
+      "retry_policy": {
+        "max_retries": 3,
+        "backoff": "exponential"
+      },
+      "fallback_agents": ["codex-cli-001"],
+      "delivery_mode": "sync"
+    },
+    "metadata": {
+      "request_id": "req-001",
+      "source": "user_interface",
+      "version": "1.0"
+    }
+  },
+  "task_response": {
+    "message_id": "task-002",
+    "timestamp": "2024-01-01T10:15:00Z",
+    "sender": {
+      "agent_id": "opencode-001",
+      "framework": "opencode",
+      "session_id": "session-001"
+    },
+    "recipient": {
+      "agent_id": "claude-code-001",
+      "framework": "claude-code",
+      "session_id": "session-001"
+    },
+    "message_type": "task_response",
+    "priority": "medium",
+    "payload": {
+      "task_id": "task-001",
+      "result": "Code review completed successfully",
+      "output": {
+        "files_reviewed": 2,
+        "issues_found": 5,
+        "security_issues": 1,
+        "performance_issues": 2,
+        "maintainability_issues": 2,
+        "recommendations": [
+          "Add input validation for message payloads",
+          "Implement connection pooling for WebSocket connections",
+          "Add comprehensive error logging"
+        ],
+        "score": {
+          "security": 8.5,
+          "performance": 7.0,
+          "maintainability": 8.0,
+          "overall": 7.8
+        }
+      }
+    },
+    "routing": {
+      "timeout": "30m",
+      "retry_policy": {
+        "max_retries": 3,
+        "backoff": "exponential"
+      },
+      "delivery_mode": "sync"
+    },
+    "metadata": {
+      "response_id": "resp-001",
+      "processing_time": "15m",
+      "version": "1.0"
+    }
+  },
+  "status_update": {
+    "message_id": "status-001",
+    "timestamp": "2024-01-01T10:30:00Z",
+    "sender": {
+      "agent_id": "codex-cli-001",
+      "framework": "codex-cli",
+      "session_id": "session-001"
+    },
+    "recipient": {
+      "agent_id": "claude-code-001",
+      "framework": "claude-code",
+      "session_id": "session-001"
+    },
+    "message_type": "status_update",
+    "priority": "low",
+    "payload": {
+      "status": "in_progress",
+      "progress": 0.65,
+      "current_step": "infrastructure_setup",
+      "completed_steps": ["analysis", "design", "implementation"],
+      "remaining_steps": ["testing", "deployment"],
+      "estimated_completion": "2024-01-01T11:30:00Z",
+      "resource_usage": {
+        "cpu": 0.45,
+        "memory": 0.72,
+        "disk": 0.23
+      }
+    },
+    "routing": {
+      "timeout": "5m",
+      "retry_policy": {
+        "max_retries": 1,
+        "backoff": "linear"
+      },
+      "delivery_mode": "async"
+    },
+    "metadata": {
+      "update_type": "progress",
+      "version": "1.0"
+    }
+  },
+  "error": {
+    "message_id": "error-001",
+    "timestamp": "2024-01-01T10:45:00Z",
+    "sender": {
+      "agent_id": "opencode-001",
+      "framework": "opencode",
+      "session_id": "session-001"
+    },
+    "recipient": {
+      "agent_id": "claude-code-001",
+      "framework": "claude-code",
+      "session_id": "session-001"
+    },
+    "message_type": "error",
+    "priority": "critical",
+    "payload": {
+      "error_code": "TASK_EXECUTION_FAILED",
+      "error_message": "Failed to execute test suite",
+      "details": {
+        "task_id": "task-003",
+        "step": "unit_testing",
+        "error": "Jest test runner crashed",
+        "stack_trace": "Error: Jest configuration not found\n    at TestRunner.initialize (/app/node_modules/jest/src/TestRunner.js:123:15)",
+        "context": {
+          "test_file": "tests/unit/communication-bus.test.ts",
+          "test_command": "npm test -- --testPathPattern=communication-bus"
+        }
+      },
+      "recovery_suggestions": [
+        "Check jest.config.js configuration",
+        "Verify test file syntax",
+        "Ensure all dependencies are installed"
+      ]
+    },
+    "routing": {
+      "timeout": "1m",
+      "retry_policy": {
+        "max_retries": 0,
+        "backoff": "linear"
+      },
+      "delivery_mode": "sync"
+    },
+    "metadata": {
+      "error_severity": "high",
+      "requires_intervention": true,
+      "version": "1.0"
+    }
+  },
+  "heartbeat": {
+    "message_id": "heartbeat-001",
+    "timestamp": "2024-01-01T10:50:00Z",
+    "sender": {
+      "agent_id": "claude-code-001",
+      "framework": "claude-code",
+      "session_id": "session-001"
+    },
+    "recipient": {
+      "agent_id": "communication-bus",
+      "framework": "system"
+    },
+    "message_type": "heartbeat",
+    "priority": "low",
+    "payload": {
+      "status": "healthy",
+      "uptime": "7200s",
+      "active_tasks": 2,
+      "completed_tasks": 15,
+      "failed_tasks": 1,
+      "resource_usage": {
+        "cpu": 0.25,
+        "memory": 0.60,
+        "network": 0.05
+      },
+      "performance_metrics": {
+        "avg_response_time": "180ms",
+        "success_rate": 0.94,
+        "queue_size": 3
+      }
+    },
+    "routing": {
+      "timeout": "30s",
+      "retry_policy": {
+        "max_retries": 1,
+        "backoff": "linear"
+      },
+      "delivery_mode": "async"
+    },
+    "metadata": {
+      "heartbeat_interval": "30s",
+      "version": "1.0"
+    }
+  }
+}

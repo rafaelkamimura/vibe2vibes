@@ -11,12 +11,22 @@ export { CodexAdapter } from './adapters/codex-adapter';
 export { ClaudeCodeAdapter } from './adapters/claude-code-adapter';
 export { BaseAdapter } from './adapters/base-adapter';
 
+export { loadConfiguration } from './config/config-loader';
+export type {
+  ConfigLoadOptions,
+  SystemConfiguration,
+  AdapterConfiguration
+} from './config/config-loader';
+
 export * from './types/protocol';
 
 import { CommunicationBus } from './communication-bus';
 import { OpenCodeAdapter } from './adapters/opencode-adapter';
 import { CodexAdapter } from './adapters/codex-adapter';
 import { ClaudeCodeAdapter } from './adapters/claude-code-adapter';
+import { loadConfiguration } from './config/config-loader';
+import type { ConfigLoadOptions } from './config/config-loader';
+import type { CommunicationBusConfig } from './types/protocol';
 
 /**
  * Example usage and factory functions
@@ -128,5 +138,70 @@ export class AgentCommunicationFactory {
         }
       ]
     });
+  }
+
+  /**
+   * Create system using JSON + environment configuration
+   */
+  static async createSystemFromConfig(options: ConfigLoadOptions & {
+    busOverrides?: Partial<CommunicationBusConfig>;
+  } = {}) {
+    const systemConfig = loadConfiguration(options);
+    const busConfig: CommunicationBusConfig = {
+      ...systemConfig.bus,
+      ...(options.busOverrides ?? {})
+    };
+
+    if (!busConfig.apiKey) {
+      busConfig.apiKey = systemConfig.security.apiKey;
+    }
+
+    const bus = new CommunicationBus(busConfig);
+    await bus.start();
+
+    const adapters: any[] = [];
+    const adapterConfigs = systemConfig.adapters;
+    const busHost = busConfig.host === '0.0.0.0' ? 'localhost' : busConfig.host;
+    const busUrl = `http://${busHost}:${busConfig.port}`;
+
+    if (adapterConfigs.opencode?.enabled) {
+      const adapter = new OpenCodeAdapter(
+        adapterConfigs.opencode.agentId,
+        busUrl,
+        adapterConfigs.opencode.config
+      );
+      await adapter.initialize();
+      adapters.push(adapter);
+    }
+
+    if (adapterConfigs.codex?.enabled) {
+      const adapter = new CodexAdapter(
+        adapterConfigs.codex.agentId,
+        busUrl,
+        adapterConfigs.codex.config
+      );
+      await adapter.initialize();
+      adapters.push(adapter);
+    }
+
+    if (adapterConfigs.claudeCode?.enabled) {
+      const adapter = new ClaudeCodeAdapter(
+        adapterConfigs.claudeCode.agentId,
+        busUrl,
+        adapterConfigs.claudeCode.config
+      );
+      await adapter.initialize();
+      adapters.push(adapter);
+    }
+
+    return {
+      bus,
+      adapters,
+      configuration: systemConfig,
+      shutdown: async () => {
+        await Promise.all(adapters.map(adapter => adapter.shutdown()));
+        await bus.stop();
+      }
+    };
   }
 }

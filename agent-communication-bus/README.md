@@ -32,6 +32,25 @@ await system.shutdown();
 
 ## Architecture
 
+### Configuration-Driven Setup
+
+```typescript
+import { AgentCommunicationFactory } from '@vibes/agent-communication-bus';
+
+// Automatically loads config/default.json and merges config/production.json when NODE_ENV=production
+const system = await AgentCommunicationFactory.createSystemFromConfig({
+  env: process.env.NODE_ENV
+});
+
+// Optional: override specific bus settings at runtime
+// const system = await AgentCommunicationFactory.createSystemFromConfig({
+//   env: process.env.NODE_ENV,
+//   busOverrides: { port: 9090 }
+// });
+```
+
+Configuration files live under `config/` with environment variables supplied via `.env` (see `.env.example`). Run `npm run validate:env` to confirm everything required is set before booting the bus.
+
 ### Core Components
 
 1. **CommunicationBus**: Central message routing and coordination

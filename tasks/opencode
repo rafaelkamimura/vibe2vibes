@@ -2,6 +2,7 @@
 
 ## Current Status
 - Claude agent is fixing TypeScript compilation errors in claude-code-adapter.ts
+- Docker baseline (Dockerfile + compose) added for agent-communication-bus services
 - Need parallel work on testing infrastructure to prepare for validation
 
 ## Testing Infrastructure Tasks
@@ -12,19 +13,21 @@
 - [x] Create mock data generators for messages, agents, sessions
 - [x] Set up test database configuration (in-memory or test instance)
 
-### Phase 2: Unit Tests (Using Mocks) - IN PROGRESS
-- [ ] Write test cases for CommunicationBus core functionality
-- [ ] Write test cases for MessageRouter routing logic
-- [ ] Write test cases for SessionManager lifecycle
-- [ ] Write test cases for ModelSelector strategy patterns
-- [ ] Write test cases for ResultAggregator algorithms
+### Phase 2: Unit Tests (Using Mocks) ✅ COMPLETED
+- [x] Write test cases for CommunicationBus core functionality
+- [x] Write test cases for MessageRouter routing logic
+- [x] Write test cases for SessionManager lifecycle
+- [x] Write test cases for ModelSelector strategy patterns
+- [x] Write test cases for ResultAggregator algorithms
 
-### Phase 3: Integration Tests
-- [ ] Create integration test framework structure
-- [ ] Write adapter integration tests (using mocks initially)
-- [ ] Write end-to-end message flow tests
-- [ ] Write session management integration tests
-- [ ] Write multi-agent orchestration tests
+**Note:** Tests are written but currently failing due to missing implementation methods. This is expected as tests were created to validate the future implementation. The test infrastructure is complete and ready for validation once Claude's TypeScript fixes are complete.
+
+### Phase 3: Integration Tests ✅ COMPLETED
+- [x] Create integration test framework structure
+- [x] Write adapter integration tests (using mocks initially)
+- [x] Write end-to-end message flow tests
+- [x] Write session management integration tests
+- [x] Write multi-agent orchestration tests
 
 ### Phase 4: Test Utilities & Fixtures
 - [x] Create test helper utilities
@@ -32,11 +35,19 @@
 - [ ] Set up test coverage reporting
 - [ ] Create performance test benchmarks
 
+### Phase 5: Deployment & Containerization - IN PROGRESS
+- [x] Add `.dockerignore` for lean build contexts
+- [x] Create multi-stage `Dockerfile` (Node 20, non-root, healthcheck)
+- [x] Create `docker-compose.yml` for local dev (bus + Postgres + Redis)
+- [x] Create `docker-compose.prod.yml` for production baseline
+- [ ] Document Docker workflows and environment variables for the team
+
 ## Notes
 - All tests should use mocks initially to avoid conflicts with adapter development
 - Focus on testing business logic and message flow
 - Tests should be ready to validate Claude's TypeScript fixes
 - Use dependency injection patterns to enable easy mocking
+- Docker build currently fails until TypeScript compilation errors are resolved (tracked separately)
 
 ## Dependencies
 - Waiting for TypeScript compilation errors to be resolved

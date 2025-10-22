@@ -1,0 +1,217 @@
+{
+  "code_review_session": {
+    "sessionId": "session-code-review-001",
+    "orchestrator": "claude-code-001",
+    "participants": [
+      {
+        "agent_id": "claude-code-001",
+        "framework": "claude-code",
+        "role": "orchestrator",
+        "status": "active",
+        "join_time": "2024-01-01T09:00:00Z",
+        "capabilities": ["code_analysis", "review", "documentation"],
+        "metadata": {
+          "experience": "senior",
+          "specialization": "typescript"
+        }
+      },
+      {
+        "agent_id": "opencode-001",
+        "framework": "opencode",
+        "role": "reviewer",
+        "status": "active",
+        "join_time": "2024-01-01T09:05:00Z",
+        "capabilities": ["testing", "security", "performance"],
+        "metadata": {
+          "experience": "senior",
+          "specialization": "testing"
+        }
+      },
+      {
+        "agent_id": "codex-cli-001",
+        "framework": "codex-cli",
+        "role": "observer",
+        "status": "waiting",
+        "join_time": "2024-01-01T09:10:00Z",
+        "capabilities": ["infrastructure", "deployment"],
+        "metadata": {
+          "experience": "intermediate",
+          "specialization": "devops"
+        }
+      }
+    ],
+    "workflow": {
+      "current_step": "security_analysis",
+      "completed_steps": ["initial_review", "functionality_test"],
+      "pending_steps": ["performance_analysis", "documentation_update"],
+      "steps": [
+        {
+          "name": "initial_review",
+          "description": "Perform initial code review and identify issues",
+          "required_agents": ["claude-code-001", "opencode-001"],
+          "estimated_duration": 1800,
+          "outputs": ["review_comments.json", "issues_list.md"]
+        },
+        {
+          "name": "functionality_test",
+          "description": "Run unit and integration tests",
+          "required_agents": ["opencode-001"],
+          "optional_agents": ["codex-cli-001"],
+          "estimated_duration": 1200,
+          "outputs": ["test_results.json", "coverage_report.html"]
+        },
+        {
+          "name": "security_analysis",
+          "description": "Analyze code for security vulnerabilities",
+          "required_agents": ["opencode-001"],
+          "estimated_duration": 900,
+          "outputs": ["security_report.json", "vulnerabilities.md"]
+        },
+        {
+          "name": "performance_analysis",
+          "description": "Analyze performance characteristics",
+          "required_agents": ["opencode-001"],
+          "estimated_duration": 600,
+          "outputs": ["performance_report.json", "bottlenecks.md"]
+        },
+        {
+          "name": "documentation_update",
+          "description": "Update documentation based on findings",
+          "required_agents": ["claude-code-001"],
+          "estimated_duration": 900,
+          "outputs": ["updated_docs/", "changelog.md"]
+        }
+      ]
+    },
+    "shared_context": {
+      "project_name": "agent-communication-bus",
+      "repository": "https://github.com/vibes/agent-communication-bus",
+      "branch": "main",
+      "commit_hash": "abc123def456",
+      "files_under_review": [
+        "src/communication-bus.ts",
+        "src/message-router.ts",
+        "src/session-manager.ts"
+      ],
+      "review_criteria": [
+        "security",
+        "performance",
+        "maintainability",
+        "test_coverage"
+      ],
+      "deadline": "2024-01-01T18:00:00Z"
+    },
+    "created_at": "2024-01-01T09:00:00Z",
+    "updated_at": "2024-01-01T10:30:00Z"
+  },
+  "feature_development_session": {
+    "sessionId": "session-feature-dev-001",
+    "orchestrator": "opencode-001",
+    "participants": [
+      {
+        "agent_id": "opencode-001",
+        "framework": "opencode",
+        "role": "orchestrator",
+        "status": "active",
+        "join_time": "2024-01-01T11:00:00Z",
+        "capabilities": ["development", "testing", "deployment"],
+        "metadata": {
+          "experience": "senior",
+          "specialization": "full_stack"
+        }
+      },
+      {
+        "agent_id": "claude-code-001",
+        "framework": "claude-code",
+        "role": "implementer",
+        "status": "busy",
+        "join_time": "2024-01-01T11:05:00Z",
+        "capabilities": ["coding", "design", "documentation"],
+        "metadata": {
+          "experience": "senior",
+          "specialization": "typescript"
+        }
+      },
+      {
+        "agent_id": "codex-cli-001",
+        "framework": "codex-cli",
+        "role": "implementer",
+        "status": "active",
+        "join_time": "2024-01-01T11:10:00Z",
+        "capabilities": ["infrastructure", "cli", "automation"],
+        "metadata": {
+          "experience": "intermediate",
+          "specialization": "devops"
+        }
+      }
+    ],
+    "workflow": {
+      "current_step": "implementation",
+      "completed_steps": ["requirements_analysis", "design"],
+      "pending_steps": ["testing", "documentation", "deployment"],
+      "steps": [
+        {
+          "name": "requirements_analysis",
+          "description": "Analyze and document requirements",
+          "required_agents": ["opencode-001"],
+          "estimated_duration": 1200,
+          "outputs": ["requirements.md", "user_stories.json"]
+        },
+        {
+          "name": "design",
+          "description": "Create technical design",
+          "required_agents": ["claude-code-001", "opencode-001"],
+          "estimated_duration": 1800,
+          "outputs": ["architecture.md", "api_design.yaml"]
+        },
+        {
+          "name": "implementation",
+          "description": "Implement the feature",
+          "required_agents": ["claude-code-001", "codex-cli-001"],
+          "estimated_duration": 3600,
+          "outputs": ["src/", "tests/", "config/"]
+        },
+        {
+          "name": "testing",
+          "description": "Write and run tests",
+          "required_agents": ["opencode-001", "claude-code-001"],
+          "estimated_duration": 1800,
+          "outputs": ["test_results/", "coverage_report.html"]
+        },
+        {
+          "name": "documentation",
+          "description": "Create documentation",
+          "required_agents": ["claude-code-001"],
+          "estimated_duration": 900,
+          "outputs": ["docs/", "README.md"]
+        },
+        {
+          "name": "deployment",
+          "description": "Deploy to staging",
+          "required_agents": ["codex-cli-001"],
+          "estimated_duration": 600,
+          "outputs": ["deployment_logs/", "health_check.json"]
+        }
+      ]
+    },
+    "shared_context": {
+      "project_name": "agent-communication-bus",
+      "feature_name": "result_aggregation",
+      "feature_description": "Implement result aggregation for multi-agent workflows",
+      "requirements": [
+        "Aggregate results from multiple agents",
+        "Handle conflicts between agent results",
+        "Provide confidence scoring",
+        "Support different synthesis strategies"
+      ],
+      "technical_constraints": [
+        "TypeScript strict mode",
+        "Zero memory leaks",
+        "Test coverage > 90%"
+      ],
+      "deadline": "2024-01-02T18:00:00Z"
+    },
+    "created_at": "2024-01-01T11:00:00Z",
+    "updated_at": "2024-01-01T13:45:00Z"
+  }
+}

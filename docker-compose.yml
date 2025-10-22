@@ -1,0 +1,62 @@
+services:
+  agent-bus:
+    build:
+      context: ./agent-communication-bus
+    image: vibes/agent-communication-bus:dev
+    container_name: agent-bus
+    restart: unless-stopped
+    ports:
+      - "${AGENT_BUS_PORT:-8080}:8080"
+    environment:
+      AGENT_BUS_PORT: ${AGENT_BUS_PORT:-8080}
+      AGENT_BUS_HOST: 0.0.0.0
+      AGENT_BUS_MAX_CONNECTIONS: ${AGENT_BUS_MAX_CONNECTIONS:-100}
+      AGENT_BUS_HEARTBEAT_INTERVAL: ${AGENT_BUS_HEARTBEAT_INTERVAL:-30000}
+      AGENT_BUS_MESSAGE_TIMEOUT: ${AGENT_BUS_MESSAGE_TIMEOUT:-300000}
+      AGENT_BUS_PERSISTENCE_ENABLED: ${AGENT_BUS_PERSISTENCE_ENABLED:-false}
+      AGENT_BUS_ENCRYPTION_ENABLED: ${AGENT_BUS_ENCRYPTION_ENABLED:-false}
+      AGENT_BUS_API_KEY: ${AGENT_BUS_API_KEY:-}
+      DATABASE_URL: ${DATABASE_URL:-postgres://vibes:vibes@postgres:5432/agent_bus}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: agent-bus-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-vibes}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vibes}
+      POSTGRES_DB: ${POSTGRES_DB:-agent_bus}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: agent-bus-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:

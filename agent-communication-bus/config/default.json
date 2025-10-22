@@ -1,0 +1,46 @@
+{
+  "bus": {
+    "port": 8080,
+    "host": "0.0.0.0",
+    "maxConnections": 100,
+    "heartbeatInterval": 30000,
+    "messageTimeout": 300000,
+    "persistenceEnabled": false,
+    "encryptionEnabled": false
+  },
+  "security": {
+    "apiKey": "change-me"
+  },
+  "persistence": {
+    "databaseUrl": "postgres://vibes:vibes@localhost:5432/agent_bus",
+    "redisUrl": "redis://localhost:6379"
+  },
+  "adapters": {
+    "opencode": {
+      "enabled": true,
+      "agentId": "opencode://code-reviewer",
+      "config": {
+        "binaryPath": "/usr/local/bin/opencode",
+        "workingDirectory": ".",
+        "maxConcurrentTasks": 3
+      }
+    },
+    "codex": {
+      "enabled": true,
+      "agentId": "codex://frontend-developer",
+      "config": {
+        "cliPath": "/usr/local/bin/codex",
+        "maxConcurrentTasks": 5,
+        "baseUrl": "https://api.codex.local"
+      }
+    },
+    "claudeCode": {
+      "enabled": true,
+      "agentId": "claude-code://backend-architect",
+      "config": {
+        "workspacePath": ".",
+        "maxConcurrentTasks": 3
+      }
+    }
+  }
+}

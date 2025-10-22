@@ -1,0 +1,49 @@
+{
+  "bus": {
+    "port": "env:AGENT_BUS_PORT",
+    "host": "env:AGENT_BUS_HOST",
+    "maxConnections": "env:AGENT_BUS_MAX_CONNECTIONS",
+    "heartbeatInterval": "env:AGENT_BUS_HEARTBEAT_INTERVAL",
+    "messageTimeout": "env:AGENT_BUS_MESSAGE_TIMEOUT",
+    "persistenceEnabled": "env:AGENT_BUS_PERSISTENCE_ENABLED",
+    "encryptionEnabled": "env:AGENT_BUS_ENCRYPTION_ENABLED"
+  },
+  "security": {
+    "apiKey": "env:AGENT_BUS_API_KEY"
+  },
+  "persistence": {
+    "databaseUrl": "env:DATABASE_URL",
+    "redisUrl": "env:REDIS_URL"
+  },
+  "adapters": {
+    "opencode": {
+      "enabled": "env:OPENCODE_ENABLED",
+      "agentId": "env:OPENCODE_AGENT_ID",
+      "config": {
+        "binaryPath": "env:OPENCODE_BINARY_PATH",
+        "workingDirectory": "env:OPENCODE_WORKING_DIRECTORY",
+        "maxConcurrentTasks": "env:OPENCODE_MAX_CONCURRENT_TASKS",
+        "timeout": "env:OPENCODE_TIMEOUT"
+      }
+    },
+    "codex": {
+      "enabled": "env:CODEX_ENABLED",
+      "agentId": "env:CODEX_AGENT_ID",
+      "config": {
+        "cliPath": "env:CODEX_CLI_PATH",
+        "maxConcurrentTasks": "env:CODEX_MAX_CONCURRENT_TASKS",
+        "baseUrl": "env:CODEX_BASE_URL",
+        "apiKey": "env:CODEX_API_KEY"
+      }
+    },
+    "claudeCode": {
+      "enabled": "env:CLAUDE_ENABLED",
+      "agentId": "env:CLAUDE_AGENT_ID",
+      "config": {
+        "workspacePath": "env:CLAUDE_WORKSPACE_PATH",
+        "maxConcurrentTasks": "env:CLAUDE_MAX_CONCURRENT_TASKS",
+        "apiKey": "env:ANTHROPIC_API_KEY"
+      }
+    }
+  }
+}
