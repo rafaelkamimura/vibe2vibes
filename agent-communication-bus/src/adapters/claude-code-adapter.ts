@@ -533,6 +533,7 @@ function createDefaultClaudeCodeDescriptor(agentId: string): AgentDescriptor {
       languages: ['javascript', 'typescript', 'python', 'go', 'java', 'c++', 'rust', 'sql', 'html', 'css'],
       tools: ['git', 'docker', 'kubernetes', 'aws', 'azure', 'gcp', 'testing_frameworks', 'ci_cd', 'claude-code-cli'],
       model_preferences: ['claude-3.5-sonnet', 'claude-3-opus', 'claude-3-haiku'],
+      optimal_tasks: ['architecture', 'code_review', 'refactoring', 'testing', 'debugging', 'documentation', 'api_design'],
       performance_profile: {
         avg_response_time: '8s',
         success_rate: 0.94,

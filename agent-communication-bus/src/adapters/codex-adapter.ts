@@ -638,6 +638,7 @@ function createDefaultCodexDescriptor(agentId: string): AgentDescriptor {
       languages: ['javascript', 'typescript', 'python', 'java', 'go', 'sql', 'yaml', 'json'],
       tools: ['npm', 'yarn', 'docker', 'kubernetes', 'aws', 'azure', 'gcp'],
       model_preferences: ['gpt-4-turbo', 'claude-3.5-sonnet', 'gemini-pro'],
+      optimal_tasks: ['code_generation', 'configuration', 'documentation', 'testing', 'deployment', 'api_implementation'],
       performance_profile: {
         avg_response_time: '8s',
         success_rate: 0.92,

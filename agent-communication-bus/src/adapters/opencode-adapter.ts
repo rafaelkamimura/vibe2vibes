@@ -487,6 +487,7 @@ function createDefaultOpenCodeDescriptor(agentId: string): AgentDescriptor {
       languages: ['go', 'python', 'javascript', 'typescript', 'java', 'c++', 'rust'],
       tools: ['git', 'linter', 'test_runner', 'debugger', 'profiler'],
       model_preferences: ['claude-3.5-sonnet', 'gpt-4-turbo'],
+      optimal_tasks: ['performance_analysis', 'debugging', 'code_optimization', 'security_audit', 'refactoring'],
       performance_profile: {
         avg_response_time: '5s',
         success_rate: 0.95,

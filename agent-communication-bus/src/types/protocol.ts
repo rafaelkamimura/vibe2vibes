@@ -72,6 +72,7 @@ export interface AgentCapability {
   languages: string[];
   tools: string[];
   model_preferences: string[];
+  optimal_tasks: string[];
   performance_profile: {
     avg_response_time: string;
     success_rate: number;
