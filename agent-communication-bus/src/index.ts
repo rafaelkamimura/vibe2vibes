@@ -11,6 +11,14 @@ export { CodexAdapter } from './adapters/codex-adapter';
 export { ClaudeCodeAdapter } from './adapters/claude-code-adapter';
 export { BaseAdapter } from './adapters/base-adapter';
 
+export { NaturalLanguageInterface } from './interfaces/natural-language';
+export type {
+  ParsedIntent,
+  TaskType,
+  NaturalLanguageConfig,
+  FormattedResponse
+} from './interfaces/natural-language';
+
 export { loadConfiguration } from './config/config-loader';
 export type {
   ConfigLoadOptions,
