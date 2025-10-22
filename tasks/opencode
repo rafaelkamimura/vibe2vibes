@@ -49,36 +49,62 @@
 
 ---
 
-## Tomorrow's Tasks (2025-10-23) - Phase 2: Integration Test Debugging
+## Tomorrow's Tasks (2025-10-23) - Phase 2: Integration Test Fixes + Real Framework Testing
 
-### Priority 1: Fix Integration Test Failures
-- [ ] Investigate 8 failing integration tests in detail
-  - Identify root causes (adapter mocking, async issues, type mismatches)
-  - Document each failure with reproduction steps
-- [ ] Fix adapter integration test failures
-  - Review mock implementations in test fixtures
-  - Ensure proper async/await handling
-- [ ] Fix end-to-end message flow test failures
-  - Verify message routing logic with real scenarios
-  - Check WebSocket connection handling in tests
+### Priority 1: Fix Integration Test Failures (2-3 hours)
+**Current Status**: 69 integration tests failing, mostly due to WebSocket mocking issues
 
-### Priority 2: Test Coverage & Reporting
-- [ ] Set up test coverage reporting with Istanbul/NYC
-- [ ] Generate coverage report and identify gaps
-- [ ] Add missing test cases for uncovered code paths
-- [ ] Target: Achieve 80%+ overall test coverage
+**Root Cause Analysis:**
+- `WebSocketServer.mockImplementation is not a function` - improper Jest mocking
+- `createTestScenario` not found - missing test framework function
+- WebSocket lifecycle not properly mocked in integration environment
 
-### Priority 3: Performance Benchmarks
-- [ ] Create performance test benchmarks for message throughput
-- [ ] Measure routing latency under load
-- [ ] Document baseline performance metrics
-- [ ] Identify potential bottlenecks for optimization
+**Tasks:**
+- [ ] Fix `tests/integration/integration-test-framework.ts` WebSocket mocking (Line 56)
+  - Replace inline `require('ws')` with proper Jest mock
+  - Add `jest.mock('ws')` at module level
+  - Create comprehensive WebSocketServer mock with all methods
+  - Mock WebSocket client instances properly
+- [ ] Add missing `createTestScenario` helper to test framework
+  - Review `adapter-integration.test.ts` usage patterns
+  - Implement scenario builder with proper types
+  - Export from integration-test-framework.ts
+- [ ] Fix multi-agent-orchestration.test.ts (7 tests)
+  - Verify WebSocket mock fixes resolve all failures
+  - Add proper cleanup in afterEach hooks
+- [ ] Run full test suite and verify fixes
+  - Target: Reduce failures from 69 to < 10
+  - Document any remaining legitimate failures
+
+### Priority 2: Real OpenCode Binary Integration (2 hours)
+**Goal**: Test adapters with actual framework binaries
+
+- [ ] Verify OpenCode binary installation
+  - Check `OPENCODE_BINARY_PATH` environment variable
+  - Test basic `opencode --help` execution
+  - Document version and capabilities
+- [ ] Create real adapter test suite
+  - New file: `tests/integration/real-opencode-adapter.test.ts`
+  - Test process spawning and communication
+  - Test stdin/stdout message passing
+  - Handle real task execution (simple code review)
+- [ ] Test with NLI delegation
+  - Natural language → OpenCode golang-pro
+  - Verify end-to-end message flow
+  - Capture and validate real responses
+
+### Priority 3: Performance and Reliability Testing (1 hour)
+- [ ] Measure adapter startup time
+- [ ] Test concurrent task handling (5 simultaneous tasks)
+- [ ] Verify graceful shutdown and cleanup
+- [ ] Test error recovery (killed process, timeout)
+- [ ] Document performance characteristics
 
 ### Success Criteria
-- ✅ All 75 tests passing (0 failures)
-- ✅ Test coverage report generated and > 80%
-- ✅ Performance benchmarks documented
-- ✅ Ready for real framework integration testing
+- ✅ Integration test failures reduced from 69 to < 10
+- ✅ Real OpenCode adapter working end-to-end
+- ✅ NLI → OpenCode delegation validated
+- ✅ Performance metrics documented
 
 ## Notes
 - All tests should use mocks initially to avoid conflicts with adapter development

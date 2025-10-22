@@ -39,57 +39,61 @@
 
 ---
 
-## Tomorrow's Tasks (2025-10-23) - Phase 2: NLI Integration Testing
+## Tomorrow's Tasks (2025-10-23) - Phase 2: Real Framework Integration
 
-### Priority 1: NLI Validation with Real Scenarios
-- [ ] Test parseIntent() with diverse natural language inputs
-  - Code review requests: "Review src/auth.ts for security issues"
-  - Performance analysis: "Optimize database queries in lib/query.ts"
-  - Multiple files: "Check src/api.ts and lib/utils.ts for bugs"
-  - Priority detection: "URGENT: Fix critical security flaw in payment.ts"
-  - Unknown tasks: "Do something with the codebase"
-- [ ] Validate edge cases:
+### Priority 1: NLI Real-World Validation Suite (2-3 hours)
+Create comprehensive validation test suite in `tests/validation/nli-real-scenarios.test.ts`:
+
+**Scenario Categories to Test:**
+- [ ] Code review requests (5+ variations)
+  - "Review src/auth.ts for security issues"
+  - "Check src/api.ts and lib/utils.ts for bugs"
+  - "URGENT: Fix critical security flaw in payment.ts"
+  - Quoted paths: "Review \"src/components/Header.tsx\" for accessibility"
+- [ ] Performance analysis (3+ variations)
+  - "Optimize database queries in lib/query.ts"
+  - "Profile API endpoints in src/api/ for bottlenecks"
+  - "Find memory leaks in src/cache-manager.ts"
+- [ ] Security analysis (3+ variations)
+  - "Check src/api.ts for security vulnerabilities"
+  - "Scan lib/database.ts for SQL injection risks"
+  - "Audit authentication in src/auth/ for security flaws"
+- [ ] Edge cases (5+ scenarios)
   - Empty input strings
   - Very long input (1000+ characters)
   - Special characters and emojis
   - Multiple task types in single request
   - Ambiguous requests with low confidence
 
-### Priority 2: Agent Selection Logic Testing
-- [ ] Register multiple test agents with different capabilities
-- [ ] Verify specialist bonus scoring works correctly
-- [ ] Test requirement matching algorithm
-- [ ] Validate performance profile weighting
-- [ ] Ensure fallback when no suitable agent found
+**Expected Outcomes:**
+- 30+ test cases covering real-world scenarios
+- Edge case handling validated
+- Agent selection accuracy verified
+- Response formatting tested with all payload types
 
-### Priority 3: Integration Examples & Documentation
-- [ ] Create example: Claude Code → OpenCode delegation
-  - Natural language input → NLI parsing → Message building
-  - Document full flow with code snippets
-- [ ] Create example: Multi-agent task routing
-  - Security review → security specialist
-  - Performance analysis → performance specialist
-- [ ] Write integration guide for framework developers
-  - How to integrate NLI into custom agents
-  - Best practices for task type mapping
-  - Agent descriptor configuration examples
+### Priority 2: End-to-End NLI Flow Documentation (1-2 hours)
+Create `docs/tutorials/nli-delegation.md`:
 
-### Priority 4: Response Formatting Validation
-- [ ] Test formatResponse() with various payload structures
-  - String results
-  - Object results with summary/message fields
-  - Issues array formatting
-  - Recommendations extraction
-  - Details and analysis display
-- [ ] Verify metadata preservation
-- [ ] Test with missing or null fields
+- [ ] Natural language → Intent parsing example
+- [ ] Intent → Agent selection example
+- [ ] Agent message construction example
+- [ ] Response formatting examples
+- [ ] Integration pattern for Claude Code delegation
+- [ ] Best practices for task type mapping
+- [ ] Configuration options and customization
+
+### Priority 3: Coordinate Real Framework Testing (1 hour)
+- [ ] Review OpenCode's integration test fixes
+- [ ] Review Codex's dashboard API wiring plan
+- [ ] Identify NLI-specific integration points
+- [ ] Document expected behavior for real adapter testing
+- [ ] Create checklist for end-to-end validation
 
 ### Success Criteria
-- ✅ NLI handles 20+ diverse natural language inputs correctly
-- ✅ Agent selection picks optimal agent in 95%+ of cases
-- ✅ Integration examples documented and working
-- ✅ Response formatting handles all payload variations
-- ✅ Ready for production use in Claude Code delegation
+- ✅ 30+ validation tests passing
+- ✅ NLI delegation tutorial complete
+- ✅ Framework integration coordination documented
+- ✅ Ready for real OpenCode/Codex testing
 
 ---
 

@@ -1,7 +1,7 @@
 # Vibe2Vibes: Immediate Next Steps
 
-**Updated**: 2025-10-22 (End of Day)
-**Status**: Phase 1 Complete ✅ - Ready for Phase 2 Integration Testing
+**Updated**: 2025-10-22 (End of Day - Tasks Set for Tomorrow)
+**Status**: Phase 1 Complete ✅ - Phase 2 Tasks Ready
 
 ---
 
@@ -12,53 +12,85 @@
 **What We Accomplished Today:**
 - ✅ TypeScript compilation - 0 errors (Claude Code)
 - ✅ Natural Language Interface with 42/42 tests passing (Claude Code)
-- ✅ Test infrastructure with 67/75 tests passing (OpenCode)
+- ✅ Test infrastructure with unit tests passing (OpenCode)
 - ✅ Docker deployment setup complete (OpenCode)
 - ✅ Dashboard mockup with all components (Codex)
 - ✅ Comprehensive documentation and configuration (Codex)
+- ✅ Project Makefile for streamlined workflow (Codex)
 
-**🎯 Phase 2 Starts Tomorrow**: Real Framework Integration & API Wiring
+**Current Test Status:**
+- Unit Tests: 124/124 passing ✅
+- Integration Tests: 69 failing (expected - need WebSocket mock fixes)
+- Build: 0 TypeScript errors ✅
 
-**Action needed**: Integration testing, API wiring, and debugging (parallel work for all 3 agents)
+**🎯 Phase 2 Starts Tomorrow**: Real Framework Integration, Test Fixes, API Wiring
+
+**Action needed**: Parallel work across all 3 agents - see detailed task files below
 
 ---
 
 ## Tomorrow's Parallel Tasks (2025-10-23) - Phase 2 Kickoff
 
-### **Claude Code Agent** - NLI Integration Testing
-**Focus**: Validate Natural Language Interface with real scenarios
+All tasks documented in detail in `tasks/` directory. Summary below:
 
-- Test NLI with sample natural language inputs
-- Validate agent selection logic with edge cases
-- Document integration patterns for other frameworks
-- Create usage examples for documentation
+### **Claude Code Agent** - NLI Validation & Documentation
+**File**: `tasks/claude`
+**Focus**: Validate Natural Language Interface with comprehensive real-world scenarios
 
-**Estimated Time**: 3-4 hours
+**Priority 1**: Create validation test suite (2-3 hours)
+- 30+ test cases covering code review, performance, security scenarios
+- Edge case handling (empty input, special characters, ambiguous requests)
+- Agent selection accuracy verification
+- Response formatting validation
+
+**Priority 2**: NLI delegation tutorial (1-2 hours)
+- Create `docs/tutorials/nli-delegation.md`
+- Document natural language → message flow
+- Integration patterns and best practices
+
+**Priority 3**: Coordinate real framework testing (1 hour)
+- Review integration plans from OpenCode and Codex
+- Document expected behavior for adapters
+
+**Estimated Time**: 4-6 hours
 
 ---
 
-### **OpenCode Agent** - Integration Test Debugging
-**Focus**: Fix 8 failing integration tests and improve coverage
+### **OpenCode Agent** - Integration Test Fixes + Real Framework Testing
+**File**: `tasks/opencode`
+**Focus**: Fix 69 failing integration tests and validate with real OpenCode binary
 
-- Investigate and fix adapter integration test failures
-- Debug end-to-end message flow tests
-- Fix async/await and mocking issues
-- Set up test coverage reporting (target: 80%+)
-- Create performance benchmarks
+**Priority 1**: Fix integration test failures (2-3 hours)
+- Fix WebSocketServer mocking in `integration-test-framework.ts` (line 56)
+- Add missing `createTestScenario` helper function
+- Target: Reduce failures from 69 to < 10
 
-**Estimated Time**: 4-5 hours
+**Priority 2**: Real OpenCode binary integration (2 hours)
+- Create `tests/integration/real-opencode-adapter.test.ts`
+- Test process spawning and stdin/stdout communication
+- Validate NLI → OpenCode delegation end-to-end
+
+**Priority 3**: Performance testing (1 hour)
+- Measure adapter startup time and concurrent capacity
+- Test error recovery and graceful shutdown
+- Document performance characteristics
+
+**Estimated Time**: 5-6 hours
 
 ---
 
-### **Codex Agent** - Dashboard API Wiring
+### **Codex Agent** - Dashboard API Integration
+**File**: `tasks/codex`
 **Focus**: Connect dashboard mockup to real Communication Bus APIs
 
-- Wire REST /metrics endpoint to MetricsStrip (polling strategy)
-- Connect WebSocket for real-time message stream
-- Fetch agent registry and populate Sidebar with real data
-- Wire session lifecycle APIs to SessionMonitor
-- Map control panel buttons to admin endpoints
-- Add error handling and loading states
+**Priority 1**: Wire REST metrics API (polling strategy)
+**Priority 2**: Connect live agent registry endpoints
+**Priority 3**: Implement WebSocket message stream
+**Priority 4**: Wire session lifecycle APIs
+**Priority 5**: Map control panel to admin endpoints
+**Priority 6**: Polish and deployment prep
+
+**All Priorities**: See `tasks/codex` lines 199-246 for complete details
 
 **Estimated Time**: 5-6 hours
 
