@@ -1,6 +1,5 @@
 import { IntegrationTestRunner, createTestScenario } from './integration-test-framework';
 import { MockDataGenerator } from '../utils/mock-generators';
-import { AgentMessage } from '../../src/types/protocol';
 
 describe('End-to-End Message Flow Tests', () => {
   let testRunner: IntegrationTestRunner;
@@ -70,6 +69,18 @@ describe('End-to-End Message Flow Tests', () => {
           orchestrator.agent_id,
           recipientIds,
           {
+            sender: {
+              agent_id: orchestrator.agent_id,
+              framework: orchestrator.framework
+            },
+            routing: {
+              timeout: '30s',
+              retry_policy: {
+                max_retries: 3,
+                backoff: 'exponential' as const
+              },
+              delivery_mode: 'async'
+            },
             message_type: 'status_update' as const,
             priority: 'medium' as const,
             payload: { status: 'project_ready', phase: 'testing' }
@@ -262,6 +273,18 @@ describe('End-to-End Message Flow Tests', () => {
           sender.agent_id,
           allReceivers,
           {
+            sender: {
+              agent_id: sender.agent_id,
+              framework: sender.framework
+            },
+            routing: {
+              timeout: '30s',
+              retry_policy: {
+                max_retries: 3,
+                backoff: 'exponential' as const
+              },
+              delivery_mode: 'async'
+            },
             message_type: 'status_update' as const,
             priority: 'medium' as const,
             payload: { status: 'system_update' }

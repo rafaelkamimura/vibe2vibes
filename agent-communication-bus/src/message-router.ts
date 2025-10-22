@@ -3,14 +3,15 @@ import { AgentMessage, AgentDescriptor } from './types/protocol';
 
 export interface RoutingResult {
   success: boolean;
-  route?: string;
+  route?: {
+    recipient_id?: string;
+    delivery_method?: string;
+    endpoint?: string;
+    priority?: string;
+    strategy?: string;
+  };
   error?: string;
   alternatives?: string[];
-  recipient_id?: string;
-  delivery_method?: string;
-  endpoint?: string;
-  priority?: string;
-  strategy?: string;
 }
 
 export interface RoutingRule {
@@ -193,12 +194,13 @@ export class MessageRouter extends EventEmitter {
           const descriptor = this.registeredAgents.get(agentId)!;
           return {
             success: true,
-            route: `direct://${agentId}`,
-            recipient_id: agentId,
-            delivery_method: this.getDeliveryMethod(descriptor),
-            endpoint: this.getEndpoint(descriptor, 'http'),
-            priority: message.priority || 'medium',
-            strategy: 'direct'
+            route: {
+              recipient_id: agentId,
+              delivery_method: this.getDeliveryMethod(descriptor),
+              endpoint: this.getEndpoint(descriptor, 'http'),
+              priority: message.priority || 'medium',
+              strategy: 'direct'
+            }
           };
         }
         return {
@@ -227,15 +229,16 @@ export class MessageRouter extends EventEmitter {
 
         const selected = this.selectAgentByLoadBalancing(candidates, message);
         const descriptor = this.registeredAgents.get(selected)!;
-        return {
+return {
           success: true,
-          route: `task://${taskType}/${selected}`,
-          recipient_id: selected,
-          delivery_method: this.getDeliveryMethod(descriptor),
-          endpoint: this.getEndpoint(descriptor, 'http'),
-          priority: message.priority || 'medium',
-          strategy: 'task_type',
-          alternatives: candidates.filter(a => a !== selected)
+          route: {
+            recipient_id: selected,
+            delivery_method: this.getDeliveryMethod(descriptor),
+            endpoint: this.getEndpoint(descriptor, 'websocket'),
+            priority: message.priority || 'medium',
+            strategy: 'task_based'
+          },
+          alternatives: candidates.slice(0, 3)
         };
       }
     });
@@ -260,7 +263,13 @@ export class MessageRouter extends EventEmitter {
         const selected = this.selectAgentByLoadBalancing(candidates, message);
         return {
           success: true,
-          route: `capability://${requiredCapabilities.join(',')}/${selected}`,
+          route: {
+            recipient_id: selected,
+            delivery_method: 'websocket',
+            endpoint: '',
+            priority: 'medium',
+            strategy: 'capability_based'
+          },
           alternatives: candidates.filter(a => a !== selected)
         };
       }
@@ -286,7 +295,13 @@ export class MessageRouter extends EventEmitter {
         const selected = this.selectAgentByLoadBalancing(candidates, message);
         return {
           success: true,
-          route: `framework://${framework}/${selected}`,
+          route: {
+            recipient_id: selected,
+            delivery_method: 'websocket',
+            endpoint: '',
+            priority: 'medium',
+            strategy: 'framework_based'
+          },
           alternatives: candidates.filter(a => a !== selected)
         };
       }
@@ -352,7 +367,13 @@ export class MessageRouter extends EventEmitter {
     const selected = this.selectAgentByLoadBalancing(healthyAgents, message);
     return {
       success: true,
-      route: `fallback://${selected}`,
+      route: {
+        recipient_id: selected,
+        delivery_method: 'websocket',
+        endpoint: '',
+        priority: 'medium',
+        strategy: 'fallback'
+      },
       alternatives: healthyAgents.filter(a => a !== selected)
     };
   }

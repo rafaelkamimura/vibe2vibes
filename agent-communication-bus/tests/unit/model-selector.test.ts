@@ -159,7 +159,7 @@ describe('ModelSelector', () => {
     it('should respect provider constraints', () => {
       const criteria = {
         taskType: 'coding',
-        agentCapabilities: ['code_generation'],
+        agentCapabilities: ['code'],
         constraints: {
           preferredProviders: ['anthropic']
         }
@@ -220,7 +220,7 @@ describe('ModelSelector', () => {
     it('should respect provider exclusion constraints', () => {
       const criteria = {
         taskType: 'coding',
-        agentCapabilities: ['code_generation'],
+        agentCapabilities: ['code'],
         constraints: {
           excludedProviders: ['openai']
         }
@@ -234,7 +234,7 @@ describe('ModelSelector', () => {
 
     it('should respect context size constraints', () => {
       const criteria = {
-        taskType: 'analysis',
+        taskType: 'document_analysis',
         agentCapabilities: ['analysis'],
         context: {
           inputSize: 100000

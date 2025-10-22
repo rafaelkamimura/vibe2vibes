@@ -196,7 +196,7 @@ export class MockDatabaseAdapter {
     // Mock disconnection
   }
 
-  async query(sql: string, params?: any[]): Promise<any[]> {
+  async query(_sql: string, _params?: any[]): Promise<any[]> {
     // Mock query execution
     return [];
   }

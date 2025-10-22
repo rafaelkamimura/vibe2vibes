@@ -385,7 +385,7 @@ describe('SessionManager', () => {
       const progress = sessionManager.getWorkflowProgress(testSessionId);
       
       expect(progress).toBeDefined();
-      expect(progress!.current).toBe('initialization');
+      expect(progress!.current).toBe('analysis');
       expect(progress!.completed).toEqual([]);
       const workflow = MockDataGenerator.createWorkflowState().steps || [];
       expect(progress!.pending).toHaveLength(workflow.length);
@@ -476,5 +476,3 @@ describe('SessionManager', () => {
     });
   });
 });
-
-  });

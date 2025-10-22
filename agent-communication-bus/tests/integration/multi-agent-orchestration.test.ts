@@ -1,6 +1,5 @@
-import { IntegrationTestRunner, createTestScenario } from './integration-test-framework';
+import { IntegrationTestRunner } from './integration-test-framework';
 import { MockDataGenerator } from '../utils/mock-generators';
-import { AgentMessage } from '../../src/types/protocol';
 
 describe('Multi-Agent Orchestration Tests', () => {
   let testRunner: IntegrationTestRunner;

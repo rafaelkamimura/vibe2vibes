@@ -265,9 +265,9 @@ it('should broadcast message to multiple recipients', async () => {
           timeout: '30s',
           retry_policy: {
             max_retries: 3,
-            backoff: 'exponential'
+            backoff: 'exponential' as const
           },
-          delivery_mode: 'async'
+          delivery_mode: 'async' as const
         },
         message_type: 'task_request' as const,
         priority: 'medium' as const,
@@ -287,6 +287,18 @@ it('should broadcast message to multiple recipients', async () => {
       ];
 
       const messageData = {
+        sender: {
+          agent_id: senderId,
+          framework: 'test'
+        },
+        routing: {
+          timeout: '30s',
+          retry_policy: {
+            max_retries: 3,
+            backoff: 'exponential' as const
+          },
+          delivery_mode: 'async' as const
+        },
         message_type: 'task_request' as const,
         priority: 'medium' as const,
         payload: { task: 'broadcast test' }

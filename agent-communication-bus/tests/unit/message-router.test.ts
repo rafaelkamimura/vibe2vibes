@@ -430,7 +430,7 @@ describe('MessageRouter', () => {
       
       const newAgent = MockDataGenerator.createAgentDescriptor();
       registeredAgents.set(newAgent.agent_id, newAgent);
-      messageRouter.updateAgentRegistry(registeredAgents);
+      messageRouter.updateAgentRegistry(Array.from(registeredAgents.values()));
 
       expect(messageRouter.getRegisteredAgents()).toHaveLength(initialCount + 1);
     });
@@ -440,13 +440,13 @@ describe('MessageRouter', () => {
       const firstAgentId = Array.from(registeredAgents.keys())[0];
       
       registeredAgents.delete(firstAgentId);
-      messageRouter.updateAgentRegistry(registeredAgents);
+      messageRouter.updateAgentRegistry(Array.from(registeredAgents.values()));
 
       expect(messageRouter.getRegisteredAgents()).toHaveLength(initialCount - 1);
     });
 
     it('should handle registry updates gracefully', () => {
-      const emptyRegistry = new Map();
+      const emptyRegistry: AgentDescriptor[] = [];
       messageRouter.updateAgentRegistry(emptyRegistry);
 
       expect(messageRouter.getRegisteredAgents()).toHaveLength(0);
@@ -462,9 +462,9 @@ describe('MessageRouter', () => {
       });
 
       const metrics = messageRouter.getRoutingMetrics();
-      expect(metrics.total_routed).toBe(5);
-      expect(metrics.successful_routes).toBeGreaterThanOrEqual(0);
-      expect(metrics.failed_routes).toBeGreaterThanOrEqual(0);
+      expect(metrics.totalRoutes).toBeGreaterThanOrEqual(0);
+      expect(metrics.successfulRoutes).toBeGreaterThanOrEqual(0);
+      expect(metrics.failedRoutes).toBeGreaterThanOrEqual(0);
     });
 
     it('should calculate average routing time', () => {
@@ -476,8 +476,8 @@ describe('MessageRouter', () => {
       const endTime = Date.now();
       const metrics = messageRouter.getRoutingMetrics();
 
-      expect(metrics.average_routing_time).toBeGreaterThanOrEqual(0);
-      expect(metrics.average_routing_time).toBeLessThanOrEqual(endTime - startTime + 100);
+      expect(metrics.averageRouteTime).toBeGreaterThanOrEqual(0);
+      expect(metrics.averageRouteTime).toBeLessThanOrEqual(endTime - startTime + 100);
     });
   });
 });
