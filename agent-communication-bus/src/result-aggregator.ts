@@ -38,6 +38,11 @@ export class ResultAggregator extends EventEmitter {
    * Start aggregating results from multiple agents
    */
   async aggregateResults(request: AggregationRequest): Promise<string> {
+    // Validate request
+    if (!request.agentResults || request.agentResults.length === 0) {
+      throw new Error('No agent results provided for aggregation');
+    }
+
     const aggregationId = `agg_${Date.now()}_${uuidv4().substring(0, 8)}`;
     
     const aggregation: ResultAggregation = {
@@ -61,7 +66,7 @@ export class ResultAggregator extends EventEmitter {
     };
 
     this.activeAggregations.set(aggregationId, aggregation);
-    this.emit('aggregation_started', { aggregation_id: aggregationId, request });
+    this.emit('aggregation_started', { aggregationId, request });
 
     // Start synthesis process
     this.performSynthesis(aggregationId, request);

@@ -185,11 +185,12 @@ export class ModelSelector extends EventEmitter {
       {
         model_id: 'claude-3.5-sonnet',
         provider: 'anthropic',
-        capabilities: ['code', 'reasoning', 'analysis', 'writing'],
+        capabilities: ['code', 'reasoning', 'analysis', 'writing', 'code_review', 'documentation'],
         cost_per_token: 0.000003,
         max_tokens: 200000,
         optimal_tasks: [
           'code_review',
+          'coding',
           'architecture_design',
           'debugging',
           'code_optimization',
@@ -204,10 +205,11 @@ export class ModelSelector extends EventEmitter {
       {
         model_id: 'gpt-4-turbo',
         provider: 'openai',
-        capabilities: ['code', 'reasoning', 'multimodal', 'generation'],
+        capabilities: ['code', 'reasoning', 'multimodal', 'generation', 'code_generation'],
         cost_per_token: 0.00001,
         max_tokens: 128000,
         optimal_tasks: [
+          'coding',
           'code_generation',
           'translation',
           'summarization',
@@ -246,6 +248,7 @@ export class ModelSelector extends EventEmitter {
         cost_per_token: 0.0000005,
         max_tokens: 128000,
         optimal_tasks: [
+          'coding',
           'general_reasoning',
           'code_completion',
           'data_analysis',
@@ -266,6 +269,7 @@ export class ModelSelector extends EventEmitter {
   private initializeTaskMappings(): void {
     // Additional task-specific mappings
     const taskMappings: Record<string, string[]> = {
+      'coding': ['claude-3.5-sonnet', 'gpt-4-turbo', 'llama-3.1-405b'],
       'security_analysis': ['claude-3.5-sonnet', 'gpt-4-turbo'],
       'performance_optimization': ['claude-3.5-sonnet', 'llama-3.1-405b'],
       'ui_ux_design': ['gpt-4-turbo', 'claude-3.5-sonnet'],

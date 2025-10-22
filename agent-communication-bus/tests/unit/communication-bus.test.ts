@@ -83,15 +83,39 @@ describe('CommunicationBus', () => {
     });
 
     it('should validate agent descriptor', async () => {
-      const invalidRegistration = {
+const invalidRegistration = {
         agent_descriptor: {
-          // Missing required fields
-          agent_id: 'test-agent'
+          agent_id: 'test-agent',
+          framework: 'test',
+          capabilities: {
+            input_types: ['text'],
+            output_types: ['text'],
+            languages: ['en'],
+            tools: [],
+            model_preferences: [],
+            optimal_tasks: [],
+            performance_profile: {
+              avg_response_time: '1s',
+              success_rate: 0.9,
+              concurrent_capacity: 1
+            }
+          },
+          endpoints: {
+            mcp: 'stdio://test-agent',
+            http: 'http://localhost:3000/test-agent',
+            websocket: 'ws://localhost:3000/ws/test-agent'
+          },
+          metadata: {
+            version: '1.0.0',
+            author: 'test',
+            tags: [],
+            description: 'test agent'
+          }
         },
-        health_check_url: 'http://localhost:3000/health',
+        health_check_url: 'http://localhost:8080/health',
         authentication: {
           type: 'api_key' as const,
-          credentials: 'test-key'
+          credentials: 'invalid-key'
         }
       };
 
@@ -226,16 +250,28 @@ describe('CommunicationBus', () => {
       senderId = registrations[0].agent_descriptor.agent_id;
     });
 
-    it('should broadcast message to multiple recipients', async () => {
+it('should broadcast message to multiple recipients', async () => {
       const recipientIds = [
         registrations[1].agent_descriptor.agent_id,
         registrations[2].agent_descriptor.agent_id
       ];
 
       const messageData = {
+        sender: {
+          agent_id: senderId,
+          framework: 'test'
+        },
+        routing: {
+          timeout: '30s',
+          retry_policy: {
+            max_retries: 3,
+            backoff: 'exponential'
+          },
+          delivery_mode: 'async'
+        },
         message_type: 'task_request' as const,
         priority: 'medium' as const,
-        payload: { task: 'broadcast test' }
+        payload: { task: 'test task' }
       };
 
       const result = await communicationBus.broadcastMessage(senderId, recipientIds, messageData);

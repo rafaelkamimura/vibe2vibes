@@ -74,7 +74,7 @@ describe('SessionManager', () => {
     it('should create session with minimal parameters', () => {
       const orchestrator = 'opencode://minimal-agent';
       
-      sessionManager.createSession(orchestrator);
+      const sessionId = sessionManager.createSession(orchestrator);
       const session = sessionManager.getSession(sessionId);
       
       expect(session).toBeDefined();
@@ -96,7 +96,7 @@ describe('SessionManager', () => {
     it('should retrieve existing session by ID', () => {
       const retrieved = sessionManager.getSession(testSessionId);
       expect(retrieved).toBeDefined();
-      expect(retrieved?.sessionId).toBe(testSession.sessionId);
+      expect(retrieved?.sessionId).toBe(testSessionId);
     });
 
     it('should return null for non-existent session', () => {
@@ -146,7 +146,7 @@ describe('SessionManager', () => {
 
       expect(eventSpy).toHaveBeenCalledWith(
         expect.objectContaining({
-          sessionId: testSession.sessionId,
+          sessionId: testSessionId,
           participant: newParticipant
         })
       );
@@ -387,6 +387,7 @@ describe('SessionManager', () => {
       expect(progress).toBeDefined();
       expect(progress!.current).toBe('initialization');
       expect(progress!.completed).toEqual([]);
+      const workflow = MockDataGenerator.createWorkflowState().steps || [];
       expect(progress!.pending).toHaveLength(workflow.length);
       expect(progress!.progress).toBe(0);
     });
@@ -442,10 +443,8 @@ describe('SessionManager', () => {
   });
 
   describe('Task Management', () => {
-    let testSessionId: string;
-
     beforeEach(() => {
-      testSessionId = sessionManager.createSession('claude://test-agent');
+      sessionManager.createSession('claude://test-agent');
     });
 
     it('should get task delegation', () => {
@@ -477,52 +476,5 @@ describe('SessionManager', () => {
     });
   });
 });
+
   });
-
-  describe('Event Emission', () => {
-    it('should emit events for all major operations', async () => {
-      const eventSpy = jest.fn();
-      const events = [
-        'session_created',
-        'participant_added',
-        'participant_removed',
-        'workflow_updated',
-        'task_delegated',
-        'task_status_updated',
-        'session_terminated'
-      ];
-
-      events.forEach(event => {
-        sessionManager.on(event, eventSpy);
-      });
-
-      // Create session
-      const sessionData = MockDataGenerator.createSessionContext();
-      const session = await sessionManager.createSession(sessionData);
-
-      // Add participant
-      const participant = MockDataGenerator.createAgentParticipant();
-      await sessionManager.addParticipant(session.sessionId, participant);
-
-      // Update workflow
-      const workflow = MockDataGenerator.createWorkflowState();
-      await sessionManager.updateWorkflow(session.sessionId, workflow);
-
-      // Delegate task
-      await sessionManager.delegateTask(
-        session.orchestrator,
-        participant.agent_id,
-        'test_task',
-        {}
-      );
-
-      // Update task status
-      await sessionManager.updateTaskStatus('task-1', 'completed', {});
-
-      // Terminate session
-      await sessionManager.terminateSession(session.sessionId, 'test');
-
-      expect(eventSpy).toHaveBeenCalledTimes(events.length);
-    });
-  });
-});

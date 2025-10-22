@@ -6,6 +6,11 @@ export interface RoutingResult {
   route?: string;
   error?: string;
   alternatives?: string[];
+  recipient_id?: string;
+  delivery_method?: string;
+  endpoint?: string;
+  priority?: string;
+  strategy?: string;
 }
 
 export interface RoutingRule {
@@ -112,9 +117,9 @@ export class MessageRouter extends EventEmitter {
     this.emit('health_updated', { agent_id: agentId, healthy });
   }
 
-  /**
-   * Get routing statistics
-   */
+/**
+    * Get routing statistics
+    */
   getRoutingStats(): {
     totalAgents: number;
     healthyAgents: number;
@@ -137,6 +142,42 @@ export class MessageRouter extends EventEmitter {
   }
 
   /**
+    * Get registered agents
+    */
+  getRegisteredAgents(): string[] {
+    return Array.from(this.registeredAgents.keys());
+  }
+
+  /**
+    * Update agent registry
+    */
+  updateAgentRegistry(agents: AgentDescriptor[]): void {
+    this.registeredAgents.clear();
+    agents.forEach(agent => {
+      this.registeredAgents.set(agent.agent_id, agent);
+    });
+    this.emit('registry_updated', { agents: agents.length });
+  }
+
+  /**
+    * Get routing metrics
+    */
+  getRoutingMetrics(): {
+    totalRoutes: number;
+    successfulRoutes: number;
+    failedRoutes: number;
+    averageRouteTime: number;
+  } {
+    // Return mock metrics for now - in real implementation would track actual routing metrics
+    return {
+      totalRoutes: 100,
+      successfulRoutes: 95,
+      failedRoutes: 5,
+      averageRouteTime: 25
+    };
+  }
+
+  /**
    * Private initialization methods
    */
   private initializeDefaultRules(): void {
@@ -149,9 +190,15 @@ export class MessageRouter extends EventEmitter {
       action: (message) => {
         const agentId = message.recipient.agent_id;
         if (this.registeredAgents.has(agentId) && this.isAgentHealthy(agentId)) {
+          const descriptor = this.registeredAgents.get(agentId)!;
           return {
             success: true,
-            route: `direct://${agentId}`
+            route: `direct://${agentId}`,
+            recipient_id: agentId,
+            delivery_method: this.getDeliveryMethod(descriptor),
+            endpoint: this.getEndpoint(descriptor, 'http'),
+            priority: message.priority || 'medium',
+            strategy: 'direct'
           };
         }
         return {
@@ -179,9 +226,15 @@ export class MessageRouter extends EventEmitter {
         }
 
         const selected = this.selectAgentByLoadBalancing(candidates, message);
+        const descriptor = this.registeredAgents.get(selected)!;
         return {
           success: true,
           route: `task://${taskType}/${selected}`,
+          recipient_id: selected,
+          delivery_method: this.getDeliveryMethod(descriptor),
+          endpoint: this.getEndpoint(descriptor, 'http'),
+          priority: message.priority || 'medium',
+          strategy: 'task_type',
           alternatives: candidates.filter(a => a !== selected)
         };
       }
@@ -374,5 +427,29 @@ export class MessageRouter extends EventEmitter {
 
   private isAgentHealthy(agentId: string): boolean {
     return this.agentHealth.get(agentId) !== false; // Default to healthy if not specified
+  }
+
+  private getDeliveryMethod(descriptor: AgentDescriptor): string {
+    // Prefer websocket if available, fallback to http, then mcp
+    if (descriptor.endpoints.websocket) {
+      return 'websocket';
+    } else if (descriptor.endpoints.http) {
+      return 'http';
+    } else {
+      return 'mcp';
+    }
+  }
+
+  private getEndpoint(descriptor: AgentDescriptor, preferredType: 'http' | 'websocket' | 'mcp'): string {
+    switch (preferredType) {
+      case 'websocket':
+        return descriptor.endpoints.websocket || descriptor.endpoints.http || descriptor.endpoints.mcp || '';
+      case 'http':
+        return descriptor.endpoints.http || descriptor.endpoints.websocket || descriptor.endpoints.mcp || '';
+      case 'mcp':
+        return descriptor.endpoints.mcp || descriptor.endpoints.http || descriptor.endpoints.websocket || '';
+      default:
+        return descriptor.endpoints.http || '';
+    }
   }
 }
