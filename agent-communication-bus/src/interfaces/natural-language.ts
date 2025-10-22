@@ -245,14 +245,14 @@ export class NaturalLanguageInterface {
   private initializeTaskPatterns(): Map<TaskType, RegExp[]> {
     return new Map([
       ['code_review', [
-        /\b(review|check|analyze|inspect|examine)\s+.*\bcode\b/i,
+        /\b(review|check|analyze|inspect|examine)\b/i,
         /\bcode\s+(review|analysis|inspection)/i,
-        /\blook\s+at\b.*\bcode\b/i
+        /\blook\s+at\b/i
       ]],
       ['security_analysis', [
         /\b(security|vulnerabilit(y|ies)|exploit|attack)\b/i,
-        /\bcheck\s+for\s+security\b/i,
-        /\bsecurity\s+(review|analysis|audit)/i
+        /\b(check|scan|test)\s+.*\bfor\s+security\b/i,
+        /\bsecurity\s+(review|analysis|audit|vulnerabilit)/i
       ]],
       ['performance_analysis', [
         /\b(performance|optimization|speed|latency|throughput)\b/i,
@@ -265,7 +265,7 @@ export class NaturalLanguageInterface {
         /\bclean\s+up\b.*\bcode\b/i
       ]],
       ['testing', [
-        /\b(test|unit\s+test|integration\s+test|e2e)\b/i,
+        /\b(tests?|unit\s+tests?|integration\s+tests?|e2e)\b/i,
         /\bwrite\s+tests?\b/i,
         /\btest\s+coverage\b/i
       ]],
@@ -314,21 +314,21 @@ export class NaturalLanguageInterface {
    * Extract file paths from input
    */
   private extractFilePaths(input: string): string[] | undefined {
-    const filePatterns = [
-      /\b([\w-]+\/)*[\w-]+\.[\w]+\b/g, // path/to/file.ext
-      /\b(src|lib|tests?)\/[\w/.-]+\b/g, // common directory patterns
-      /['"`](.*?\.[\w]+)['"`]/g // quoted file paths
-    ];
-
     const files: Set<string> = new Set();
 
-    for (const pattern of filePatterns) {
-      const matches = input.matchAll(pattern);
-      for (const match of matches) {
-        const file = match[1] || match[0];
-        if (file && file.includes('.')) {
-          files.add(file.replace(/['"`]/g, ''));
-        }
+    // Pattern 1: Standard file paths (e.g., src/auth.ts, lib/utils.js)
+    const pathPattern = /\b([\w-]+\/)+[\w-]+\.[\w]+\b/g;
+    const pathMatches = input.matchAll(pathPattern);
+    for (const match of pathMatches) {
+      files.add(match[0]);
+    }
+
+    // Pattern 2: Quoted file paths (e.g., "src/file.ts", 'lib/util.js')
+    const quotedPattern = /['"`](.*?\.[\w]+)['"`]/g;
+    const quotedMatches = input.matchAll(quotedPattern);
+    for (const match of quotedMatches) {
+      if (match[1]) {
+        files.add(match[1]);
       }
     }
 
@@ -457,6 +457,14 @@ export class NaturalLanguageInterface {
     // Check optimal_tasks
     if (agent.capabilities.optimal_tasks.includes(taskType)) {
       score += 10;
+
+      // Bonus for specialists (fewer tasks = more specialized)
+      const taskCount = agent.capabilities.optimal_tasks.length;
+      if (taskCount === 1) {
+        score += 3; // High specialist bonus
+      } else if (taskCount === 2) {
+        score += 1; // Moderate specialist bonus
+      }
     }
 
     // Check requirements match with tools/capabilities
@@ -468,16 +476,15 @@ export class NaturalLanguageInterface {
       ].map(c => c.toLowerCase());
 
       for (const req of requirements) {
-        if (agentCapabilities.some(cap => cap.includes(req))) {
-          score += 1;
-        }
+        // Count how many capabilities match this requirement
+        const matchCount = agentCapabilities.filter(cap => cap.includes(req)).length;
+        score += matchCount * 0.5; // Each matching capability adds 0.5 points
       }
     }
 
-    // Consider performance profile
-    if (agent.capabilities.performance_profile.success_rate > 0.9) {
-      score += 2;
-    }
+    // Consider performance profile (scaled by success rate)
+    const successRate = agent.capabilities.performance_profile.success_rate;
+    score += successRate * 5; // Scale: 0.0-1.0 becomes 0-5 points
 
     return score;
   }
@@ -487,7 +494,19 @@ export class NaturalLanguageInterface {
    */
   private generateSummary(message: AgentMessage): string {
     const taskType = message.payload.task_type;
-    const result = message.payload.result;
+    const payload = message.payload;
+
+    // Check payload level first
+    if (payload.summary && typeof payload.summary === 'string') {
+      return payload.summary;
+    }
+
+    if (payload.message && typeof payload.message === 'string') {
+      return payload.message;
+    }
+
+    // Then check result field
+    const result = payload.result;
 
     if (typeof result === 'string') {
       return result;

@@ -47,7 +47,6 @@ export class MockDataGenerator {
         success_rate: 0.95,
         concurrent_capacity: 5
       },
-      optimal_tasks: ['coding', 'review'],
       ...overrides
     };
   }
