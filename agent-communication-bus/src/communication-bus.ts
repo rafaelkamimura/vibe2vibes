@@ -204,7 +204,7 @@ export class CommunicationBus extends EventEmitter {
     recipientIds: string[],
     message: Omit<AgentMessage, 'recipient' | 'message_id' | 'timestamp'>
   ): Promise<{ successful: string[], failed: string[] }> {
-    const results = { successful: [], failed: [] };
+    const results: { successful: string[], failed: string[] } = { successful: [], failed: [] };
 
     for (const recipientId of recipientIds) {
       const fullMessage: AgentMessage = {
