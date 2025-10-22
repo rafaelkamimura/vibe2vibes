@@ -38,11 +38,11 @@ export class AgentCommunicationFactory {
     await bus.start();
 
     // Create and initialize adapters
-    const adapters = [];
-    
+    const adapters: any[] = [];
+
     for (const adapterConfig of config.adapters) {
-      let adapter;
-      
+      let adapter: any;
+
       switch (adapterConfig.type) {
         case 'opencode':
           adapter = new OpenCodeAdapter(

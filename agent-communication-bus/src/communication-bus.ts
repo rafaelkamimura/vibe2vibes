@@ -4,14 +4,14 @@ import { WebSocketServer, WebSocket } from 'ws';
 import express from 'express';
 import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
-import { 
-  AgentMessage, 
-  AgentDescriptor, 
-  CommunicationBusConfig, 
+import {
+  AgentMessage,
+  AgentDescriptor,
+  CommunicationBusConfig,
   AgentRegistration,
   HealthStatus,
   BusMetrics
-} from '../types/protocol';
+} from './types/protocol';
 import { SessionManager } from './session-manager';
 import { MessageRouter } from './message-router';
 import { ModelSelector } from './model-selector';
@@ -25,8 +25,8 @@ export class CommunicationBus extends EventEmitter {
   
   private sessionManager: SessionManager;
   private messageRouter: MessageRouter;
-  private modelSelector: ModelSelector;
-  private resultAggregator: ResultAggregator;
+  private _modelSelector: ModelSelector;
+  private _resultAggregator: ResultAggregator;
   
   private registeredAgents: Map<string, AgentDescriptor> = new Map();
   private agentConnections: Map<string, WebSocket> = new Map();
@@ -49,10 +49,10 @@ export class CommunicationBus extends EventEmitter {
       autoCleanup: true,
       persistenceEnabled: config.persistenceEnabled
     });
-    
+
     this.messageRouter = new MessageRouter(this.registeredAgents);
-    this.modelSelector = new ModelSelector();
-    this.resultAggregator = new ResultAggregator();
+    this._modelSelector = new ModelSelector();
+    this._resultAggregator = new ResultAggregator();
     
     this.metrics = {
       total_messages: 0,
@@ -258,7 +258,7 @@ export class CommunicationBus extends EventEmitter {
   /**
    * Get agent health status
    */
-  getAgentHealth(agentId: string): HealthStatus | null {
+  getAgentHealth(_agentId: string): HealthStatus | null {
     // This would be implemented with actual health checking logic
     return null;
   }
@@ -304,12 +304,12 @@ export class CommunicationBus extends EventEmitter {
     });
 
     // Metrics endpoint
-    this.app.get('/metrics', (req, res) => {
+    this.app.get('/metrics', (_req, res) => {
       res.json(this.getMetrics());
     });
 
     // Health check endpoint
-    this.app.get('/health', (req, res) => {
+    this.app.get('/health', (_req, res) => {
       res.json({ status: 'healthy', uptime: Date.now() - this.metrics.uptime });
     });
   }
@@ -334,7 +334,7 @@ export class CommunicationBus extends EventEmitter {
         queue.length = 0; // Clear queue
       }
 
-      ws.on('message', (data: WebSocket.Data) => {
+      ws.on('message', (data: string | Buffer) => {
         try {
           const message: AgentMessage = JSON.parse(data.toString());
           this.handleIncomingMessage(message);
@@ -366,7 +366,7 @@ export class CommunicationBus extends EventEmitter {
     });
   }
 
-  private setupHealthCheck(agentId: string, healthCheckUrl: string): void {
+  private setupHealthCheck(agentId: string, _healthCheckUrl: string): void {
     setInterval(async () => {
       try {
         // This would implement actual health checking
