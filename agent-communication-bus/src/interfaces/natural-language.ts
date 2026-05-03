@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import * as path from 'path';
 import {
   AgentMessage,
   AgentIdentifier,
@@ -106,7 +107,22 @@ export class NaturalLanguageInterface {
    * Parse natural language input into structured intent
    */
   parseIntent(input: string): ParsedIntent {
-    const normalizedInput = input.toLowerCase().trim();
+    // Input validation
+    if (!input || typeof input !== 'string') {
+      throw new Error('Input must be a non-empty string');
+    }
+
+    const trimmedInput = input.trim();
+
+    if (trimmedInput.length < 3) {
+      throw new Error('Input must be at least 3 characters long');
+    }
+
+    if (trimmedInput.length > 10000) {
+      throw new Error('Input must not exceed 10,000 characters');
+    }
+
+    const normalizedInput = trimmedInput.toLowerCase();
 
     // Detect task type
     const taskType = this.detectTaskType(normalizedInput);
@@ -320,19 +336,56 @@ export class NaturalLanguageInterface {
     const pathPattern = /\b([\w-]+\/)+[\w-]+\.[\w]+\b/g;
     const pathMatches = input.matchAll(pathPattern);
     for (const match of pathMatches) {
-      files.add(match[0]);
+      if (this.validateFilePath(match[0])) {
+        files.add(match[0]);
+      }
     }
 
     // Pattern 2: Quoted file paths (e.g., "src/file.ts", 'lib/util.js')
     const quotedPattern = /['"`](.*?\.[\w]+)['"`]/g;
     const quotedMatches = input.matchAll(quotedPattern);
     for (const match of quotedMatches) {
-      if (match[1]) {
+      if (match[1] && this.validateFilePath(match[1])) {
         files.add(match[1]);
       }
     }
 
     return files.size > 0 ? Array.from(files) : undefined;
+  }
+
+  /**
+   * Validate file path for security (prevent path traversal)
+   */
+  private validateFilePath(filePath: string): boolean {
+    // Reject empty paths
+    if (!filePath || filePath.trim().length === 0) {
+      return false;
+    }
+
+    // Normalize the path
+    const normalized = path.normalize(filePath);
+
+    // Reject paths with parent directory references
+    if (normalized.includes('..')) {
+      return false;
+    }
+
+    // Reject absolute paths (should be relative project paths)
+    if (path.isAbsolute(normalized)) {
+      return false;
+    }
+
+    // Only allow safe characters: alphanumeric, dash, underscore, forward slash, period
+    if (!/^[a-zA-Z0-9\/_.-]+$/.test(normalized)) {
+      return false;
+    }
+
+    // Reject paths that try to escape with encoded characters
+    if (filePath.includes('%2e') || filePath.includes('%2f') || filePath.includes('%5c')) {
+      return false;
+    }
+
+    return true;
   }
 
   /**
